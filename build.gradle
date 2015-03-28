@@ -1,0 +1,72 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'jacoco'
+apply plugin: 'war'
+
+def dependenciesDir = 'lib'
+
+sourceCompatibility = sourceJavaVersion
+targetCompatibility = targetJavaVersion
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'javax.ws.rs:javax.ws.rs-api:2.0'
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+    compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.12'
+    compile 'org.glassfish.jersey.media:jersey-media-moxy:2.13'
+    compile 'ch.qos.logback:logback-classic:1.1.2'
+    testCompile 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle:2.15'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.1'
+    testCompile 'com.h2database:h2:1.4.182'
+    testRuntime 'cglib:cglib-nodep:3.1'
+}
+
+task javadoc(overwrite: true, type: Javadoc) {
+    group = "Documentation"
+    source = sourceSets.main.allJava
+    title = projectName + " " + projectVersion + " API"
+    description = projectDescription
+    destinationDir = new File('docs/javadoc')
+}
+
+task cleanDependencies(type: Delete) {
+    delete(dependenciesDir)
+}
+
+task copyDependencies(type: Copy, dependsOn: [build, cleanDependencies]) {
+    from configurations.runtime
+    into dependenciesDir
+    from configurations.testRuntime
+    into dependenciesDir
+}
+
+task version << {
+    println "Gradle version: " + project.getGradle().getGradleVersion()
+    println "Groovy version: " + GroovySystem.getVersion()
+}
+
+// Can be omitted, but is here to display tests as they are run
+tasks.withType(Test) {
+        testLogging {
+                events "passed", "failed", "skipped", "standardOut", "standardError"
+                showExceptions true
+        }
+}
+
+jacocoTestReport {
+        reports {
+                xml.enabled false
+                csv.enabled false
+                html.destination "${buildDir}/reports/jacocoHtml"
+        }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
+

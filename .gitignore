@@ -1,0 +1,14 @@
+.classpath
+.gradle/
+.project
+.settings/
+bin/
+/lib
+build/
+.idea/
+out/
+/nbproject
+build.xml
+catalina.base_IS_UNDEFINED/
+/dist/
+/conf/
