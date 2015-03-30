@@ -1,8 +1,8 @@
-package dk.jimmikristensen.aaws.exception.mapper;
+package dk.jimmikristensen.aaws.webservice.exception.mapper;
 
-import dk.jimmikristensen.aaws.error.ErrorCode;
-import dk.jimmikristensen.aaws.error.GeneralError;
-import dk.jimmikristensen.aaws.exception.GeneralException;
+import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
+import dk.jimmikristensen.aaws.webservice.error.GeneralError;
+import dk.jimmikristensen.aaws.webservice.exception.GeneralException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

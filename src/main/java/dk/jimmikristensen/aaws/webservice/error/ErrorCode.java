@@ -1,4 +1,4 @@
-package dk.jimmikristensen.aaws.error;
+package dk.jimmikristensen.aaws.webservice.error;
 
 public enum ErrorCode {
 

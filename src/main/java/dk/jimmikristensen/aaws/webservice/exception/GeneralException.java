@@ -1,6 +1,6 @@
-package dk.jimmikristensen.aaws.exception;
+package dk.jimmikristensen.aaws.webservice.exception;
 
-import dk.jimmikristensen.aaws.error.ErrorCode;
+import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
