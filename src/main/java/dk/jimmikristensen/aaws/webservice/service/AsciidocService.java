@@ -19,6 +19,7 @@ public interface AsciidocService {
     @POST
     @Path("/asciidoc/{apikey}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.TEXT_HTML)
     public Response uploadFile(
             @PathParam("apikey") String apikey, 
             @FormDataParam("file") InputStream stream, 

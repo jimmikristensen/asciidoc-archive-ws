@@ -1,5 +1,6 @@
 package dk.jimmikristensen.aaws.webservice.service;
 
+import dk.jimmikristensen.aaws.domain.AsciidocConverter;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,17 +29,18 @@ public class AsciidocServiceImpl implements AsciidocService {
                 buf.write(b);
                 result = bis.read();
             }
-            System.out.println(buf.toString());
             
-            System.out.println("END");
+            AsciidocConverter converter = new AsciidocConverter();
+            converter.loadString(buf.toString());
+            String html = converter.getHtml();
             
+            return Response.ok(html).build();
             
         } catch (IOException ex) {
             Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        return Response.ok().build();
-        
+        return Response.serverError().build();
     }
 
     @Override

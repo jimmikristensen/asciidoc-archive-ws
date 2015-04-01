@@ -4,12 +4,9 @@ import dk.jimmikristensen.aaws.webservice.config.ApplicationConfig;
 import dk.jimmikristensen.aaws.webservice.service.AsciidocService;
 import dk.jimmikristensen.aaws.webservice.service.AsciidocServiceImpl;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.client.Entity;
@@ -22,7 +19,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.test.JerseyTest;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -50,24 +46,17 @@ public class TestAsciiService extends JerseyTest {
     public void uploadAsciidocFile() throws IOException {
         String apikey = "123123";
         String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
-        
-        String contents = getTestCase1();
-        FormDataMultiPart part = new FormDataMultiPart();
-        FormDataContentDisposition dispo = FormDataContentDisposition
-                .name("file")
-                .fileName("asciidoc-testcase1.adoc")
-                .size(contents.getBytes().length)
-                .build();
-        FormDataBodyPart bodyPart = new FormDataBodyPart(dispo, contents);
-        part.bodyPart(bodyPart);
-        Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
 
+        FormDataMultiPart part = getTestCase("asciidoc-testcase1.adoc");
+
+        Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+//        System.out.println(response.readEntity(String.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
-    
-    private String getTestCase1() {
-        InputStream is = getClass().getResourceAsStream("/asciidoc-testcase1.adoc");
-        
+
+    private FormDataMultiPart getTestCase(String fileName) {
+        InputStream is = getClass().getResourceAsStream("/"+fileName);
+
         String contents = "";
         try {
             BufferedInputStream bis = new BufferedInputStream(is);
@@ -80,10 +69,22 @@ public class TestAsciiService extends JerseyTest {
             }
 
             contents = buf.toString();
+
+            FormDataMultiPart part = new FormDataMultiPart();
+            FormDataContentDisposition dispo = FormDataContentDisposition
+                    .name("file")
+                    .fileName(fileName)
+                    .size(contents.getBytes().length)
+                    .build();
+            FormDataBodyPart bodyPart = new FormDataBodyPart(dispo, contents);
+            part.bodyPart(bodyPart);
+            
+            return part;
+
         } catch (IOException ex) {
             Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        return contents;
+
+        return null;
     }
 }
