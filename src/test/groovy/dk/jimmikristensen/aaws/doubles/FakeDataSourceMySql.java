@@ -20,7 +20,7 @@ public class FakeDataSourceMySql implements DataSource {
     public FakeDataSourceMySql() throws ClassNotFoundException {
         Class.forName("org.h2.Driver");
         //database runs sql/create.sql script first to create db structure, and then runs sql/populate.sql to insert test data
-        connectionPool = JdbcConnectionPool.create("jdbc:h2:mem:test;INIT=runscript from 'classpath:scripts/create_mysql.sql'\\;runscript from 'classpath:scripts/populate_mysql.sql';ALIAS_COLUMN_NAME=TRUE;MODE=MySQL","testuser","");
+        connectionPool = JdbcConnectionPool.create("jdbc:h2:mem:test;INIT=CREATE SCHEMA IF NOT EXISTS ASCIIDOC_SERVICE\\;runscript from 'classpath:scripts/create_mysql.sql'\\;runscript from 'classpath:scripts/populate_mysql.sql';ALIAS_COLUMN_NAME=TRUE;MODE=MySQL","testuser","");
 }
 
     @Override

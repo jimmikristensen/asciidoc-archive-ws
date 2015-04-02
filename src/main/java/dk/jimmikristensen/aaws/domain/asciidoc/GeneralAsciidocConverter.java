@@ -1,4 +1,4 @@
-package dk.jimmikristensen.aaws.domain;
+package dk.jimmikristensen.aaws.domain.asciidoc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,16 +9,18 @@ import org.asciidoctor.ast.DocumentHeader;
 import org.asciidoctor.ast.RevisionInfo;
 import org.asciidoctor.ast.StructuredDocument;
 
-public class AsciidocConverter {
+public class GeneralAsciidocConverter implements AsciidocConverter {
     
-    private final Asciidoctor asciidoctor;
-    private DocumentHeader header;
-    private String asciidocString;
+    protected Asciidoctor asciidoctor;
+    protected DocumentHeader header;
+    protected String asciidocString;
+    protected AsciidocBackend backend;
     
-    public AsciidocConverter() {
+    public GeneralAsciidocConverter() {
         asciidoctor = create();
     }
     
+    @Override
     public DocumentHeader getDocHeader() {
         if (asciidocString == null) { 
             return null; 
@@ -27,6 +29,7 @@ public class AsciidocConverter {
         return header;
     }
     
+    @Override
     public Author getAuthor() {
         if (asciidocString == null) { 
             return null; 
@@ -37,6 +40,7 @@ public class AsciidocConverter {
         return header.getAuthor();
     }
     
+    @Override
     public RevisionInfo getRevisionInfo() {
         if (asciidocString == null) { 
             return null; 
@@ -47,6 +51,7 @@ public class AsciidocConverter {
         return header.getRevisionInfo();
     }
     
+    @Override
     public StructuredDocument getDocument() {
         if (asciidocString == null) { 
             return null; 
@@ -57,6 +62,7 @@ public class AsciidocConverter {
         return asciidoctor.readDocumentStructure(asciidocString, parameters);
     }
     
+    @Override
     public StructuredDocument getDocument(int maxLevel) {
         if (asciidocString == null) { 
             return null; 
@@ -67,21 +73,22 @@ public class AsciidocConverter {
         return asciidoctor.readDocumentStructure(asciidocString, parameters);
     }
     
+    @Override
     public void loadString(String docString) {
         asciidocString = docString;
     }
     
-    public String getHtml() {
+    @Override
+    public String convert() {
         if (asciidocString == null) { 
             return null; 
         }
-        
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("backend", "html5");
-        
-        Map<String, Object> options = new HashMap<>();
-        options.put("attributes", attributes);        
 
-        return asciidoctor.convert(asciidocString, options);
+        return asciidoctor.convert(asciidocString, new HashMap<>());
+    }
+
+    @Override
+    public AsciidocBackend getBackend() {
+        return backend;
     }
 }

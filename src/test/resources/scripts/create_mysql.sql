@@ -11,12 +11,12 @@ DROP TABLE IF EXISTS `asciidoc`;
 CREATE TABLE IF NOT EXISTS `asciidoc` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `apikeys_id` INT UNSIGNED NOT NULL,
-  `doc` MEDIUMBLOB NOT NULL DEFAULT '',
+  `doc` MEDIUMTEXT NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   INDEX `fk_asciidoc_apikeys_idx` (`apikeys_id` ASC),
   CONSTRAINT `fk_asciidoc_apikeys`
     FOREIGN KEY (`apikeys_id`)
-    REFERENCES `asciidoc_service`.`apikeys` (`id`)
+    REFERENCES `apikeys` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );
@@ -25,12 +25,12 @@ DROP TABLE IF EXISTS `translation`;
 CREATE TABLE IF NOT EXISTS `translation` (
   `type` VARCHAR(20) NOT NULL,
   `asciidoc_id` INT UNSIGNED NOT NULL,
-  `doc` MEDIUMBLOB NOT NULL DEFAULT '',
+  `doc` MEDIUMTEXT NOT NULL DEFAULT '',
   PRIMARY KEY (`type`, `asciidoc_id`),
   INDEX `fk_translation_asciidoc1_idx` (`asciidoc_id` ASC),
   CONSTRAINT `fk_translation_asciidoc1`
     FOREIGN KEY (`asciidoc_id`)
-    REFERENCES `asciidoc_service`.`asciidoc` (`id`)
+    REFERENCES `asciidoc` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );

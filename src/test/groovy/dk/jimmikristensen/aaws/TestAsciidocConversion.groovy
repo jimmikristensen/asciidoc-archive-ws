@@ -8,17 +8,18 @@ import org.junit.Test
 import spock.lang.Specification
 
 import static org.junit.Assert.*
-import dk.jimmikristensen.aaws.domain.AsciidocConverter
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
+import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
 
 class TestAsciidocConversion extends Specification {
 
     void "Asciidoc converted to html"() {
         given:
-        AsciidocConverter converter = new AsciidocConverter();
+        AsciidocConverter converter = new HtmlAsciidocConverter();
         
         when:
         converter.loadString(getTestCase("asciidoc-testcase1.adoc"));
-        String html = converter.getHtml();
+        String html = converter.convert();
         
         then:
         html != null;
@@ -30,11 +31,11 @@ class TestAsciidocConversion extends Specification {
     
     void "get meta data from document"() {
         given:
-        AsciidocConverter converter = new AsciidocConverter();
+        AsciidocConverter converter = new HtmlAsciidocConverter();
         
         when:
         converter.loadString(getTestCase("asciidoc-testcase2.adoc"));
-        String html = converter.getHtml();
+        String html = converter.convert();
         
         then:
         html != null;
@@ -50,11 +51,11 @@ class TestAsciidocConversion extends Specification {
     
     void "convert badly formed document"() {
         given:
-        AsciidocConverter converter = new AsciidocConverter();
+        AsciidocConverter converter = new HtmlAsciidocConverter();
         
         when:
         converter.loadString(getTestCase("asciidoc-testcase3.adoc"));
-        String html = converter.getHtml();
+        String html = converter.convert();
         
         then:
         null != html;

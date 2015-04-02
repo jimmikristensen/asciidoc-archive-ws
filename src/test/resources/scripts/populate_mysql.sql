@@ -1,0 +1,1 @@
+INSERT INTO apikeys (apikey, owner) VALUES ('913a73b565c8e2c8ed94497580f619397709b8b6', 'test@jimmikristensen.dk');
