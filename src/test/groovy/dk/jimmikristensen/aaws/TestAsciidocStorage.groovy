@@ -21,6 +21,7 @@ import dk.jimmikristensen.aaws.domain.AsciidocHandler
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
 import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
+import java.sql.SQLException
 
 class TestAsciidocStorage extends Specification {
     
@@ -65,6 +66,7 @@ class TestAsciidocStorage extends Specification {
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
         AsciidocEntity aEntity = new AsciidocEntity();
         aEntity.setApikeyId(1);
+        aEntity.setTitle("Some title");
         aEntity.setDoc("Test");
         TranslationEntity tEntity = new TranslationEntity();
         tEntity.setType(AsciidocBackend.HTML5);
@@ -82,6 +84,7 @@ class TestAsciidocStorage extends Specification {
         DataSourceFactory dsFactory = new FakeDataSourceFactory();
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
         AsciidocEntity aEntity = new AsciidocEntity();
+        aEntity.setTitle("Some Doc1");
         aEntity.setDoc("Test");
         TranslationEntity tEntity = new TranslationEntity();
         tEntity.setType(AsciidocBackend.HTML5);
@@ -89,10 +92,10 @@ class TestAsciidocStorage extends Specification {
         tEntity.setDoc("<p>Test</p>");
         
         when:
-        boolean status = asdDAO.saveAsciidoc(aEntity, tEntity);
+        asdDAO.saveAsciidoc(aEntity, tEntity);
         
         then:
-        status == false;
+        thrown(SQLException);
     }
     
     void "Insertion of asciidoc should fail if no asciidoc string is set"() {
@@ -101,16 +104,17 @@ class TestAsciidocStorage extends Specification {
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
         AsciidocEntity aEntity = new AsciidocEntity();
         aEntity.setId(1);
+        aEntity.setTitle("Some Doc2");
         TranslationEntity tEntity = new TranslationEntity();
         tEntity.setType(AsciidocBackend.HTML5);
         tEntity.setAsciidocId(1);     
         tEntity.setDoc("<p>Test</p>");
         
         when:
-        boolean status = asdDAO.saveAsciidoc(aEntity, tEntity);
+        asdDAO.saveAsciidoc(aEntity, tEntity);
         
         then:
-        status == false;
+        thrown(SQLException);
     }
     
     void "simulate convert and store asciidoc using mocks"() {
@@ -167,7 +171,31 @@ class TestAsciidocStorage extends Specification {
         e.message == "Main title not set";
     }
     
-    void "get asciidoc as html5"() {
+    void "inserting two documents with the same title should not be allowed"() {
+        setup:
+        AsciidocConverter converter = new HtmlAsciidocConverter();
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
+        int apikeyId = 1;
+        String asciiDoc = "= Test";
+        
+        when:
+        boolean status = ah.storeAsciidoc(apikeyId, asciiDoc);
+        
+        then:
+        status == true;
+        converter.getMainTitle() == "Test";
+        
+        when:
+        boolean status2 = ah.storeAsciidoc(apikeyId, asciiDoc);
+        
+        then:
+        def e = thrown(SQLException);
+        e.getSQLState() == "23505"; //duplicate entry
+    }
+    
+    void "get asciidoc by id"() {
         given:
         DataSourceFactory dsFactory = new FakeDataSourceFactory();
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
@@ -182,5 +210,19 @@ class TestAsciidocStorage extends Specification {
         docEntity.getDoc().endsWith("puts \"Hello, World!\"") == true;
     }
     
+    void "get asciidoc by title"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        
+        when:
+        AsciidocEntity docEntity = asdDAO.getDocumentByTitle("Introduction to AsciiDoc");
+        
+        then:
+        docEntity != null;
+        docEntity.getDoc() != "";
+        docEntity.getDoc().startsWith("= Introduction to AsciiDoc") == true;
+        docEntity.getDoc().endsWith("puts \"Hello, World!\"") == true;
+    }
     
 }

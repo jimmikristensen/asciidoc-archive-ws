@@ -10,10 +10,12 @@ CREATE TABLE IF NOT EXISTS `apikeys` (
 DROP TABLE IF EXISTS `asciidoc`;
 CREATE TABLE IF NOT EXISTS `asciidoc` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(200) NOT NULL,
   `apikeys_id` INT UNSIGNED NOT NULL,
   `doc` MEDIUMTEXT NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   INDEX `fk_asciidoc_apikeys_idx` (`apikeys_id` ASC),
+  UNIQUE INDEX `UNIQUETITLE` (`title` ASC),
   CONSTRAINT `fk_asciidoc_apikeys`
     FOREIGN KEY (`apikeys_id`)
     REFERENCES `apikeys` (`id`)

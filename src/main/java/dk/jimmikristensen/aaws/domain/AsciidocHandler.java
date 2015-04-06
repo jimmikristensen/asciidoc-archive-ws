@@ -5,6 +5,7 @@ import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
+import java.sql.SQLException;
 
 public class AsciidocHandler {
     
@@ -16,7 +17,7 @@ public class AsciidocHandler {
         this.dao = dao;
     }
 
-    public boolean storeAsciidoc(int apikeyId, String asciiDoc) throws MissingAsciidocPropertyException {
+    public boolean storeAsciidoc(int apikeyId, String asciiDoc) throws MissingAsciidocPropertyException, SQLException {
         converter.loadString(asciiDoc);
         String convertedDoc = converter.convert();
         
@@ -27,6 +28,7 @@ public class AsciidocHandler {
 
         AsciidocEntity aEntity = new AsciidocEntity();
         aEntity.setApikeyId(apikeyId);
+        aEntity.setTitle(docTitle);
         aEntity.setDoc(asciiDoc);
         
         TranslationEntity tEntity = new TranslationEntity();

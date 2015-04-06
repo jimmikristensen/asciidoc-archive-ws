@@ -23,13 +23,14 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.test.JerseyTest;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestAsciiService extends JerseyTest {
     
-    @BeforeClass
-    public static void setUpClass() throws ClassNotFoundException {
+    @Before
+    public void setup() throws ClassNotFoundException {
         DataSources.put("asciidoc_service", new FakeDataSourceMySql());
     }
 
@@ -55,10 +56,46 @@ public class TestAsciiService extends JerseyTest {
         String apikey = "testkey";
         String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
 
-        FormDataMultiPart part = getTestCase("asciidoc-testcase1.adoc");
+        FormDataMultiPart part = getTestCase("asciidoc-testcase5.adoc");
 
         Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+    }
+    
+    @Test
+    public void uploadAsciidocFileShouldFailWithForbiddenWhenSuppyingInvalidKey() {
+        String apikey = "invalidkey";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
+        
+        FormDataMultiPart part = getTestCase("asciidoc-testcase2.adoc");
+        
+        Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        assertEquals(Response.Status.FORBIDDEN.getStatusCode(), response.getStatus());
+    } 
+   
+    @Test
+    public void uploadAsciidocFileShouldFailDocumentHasNoTitle() {
+        String apikey = "testkey";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
+        
+        FormDataMultiPart part = getTestCase("asciidoc-testcase4.adoc");
+        
+        Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+    }
+    
+    @Test
+    public void uploadSameAsciidocFileShouldFailWithBadRequest() {
+        String apikey = "testkey";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
+        
+        FormDataMultiPart part = getTestCase("asciidoc-testcase2.adoc");
+        
+        Response response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        
+        response = target(asciidocServicePath).request().post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     }
 
     private FormDataMultiPart getTestCase(String fileName) {

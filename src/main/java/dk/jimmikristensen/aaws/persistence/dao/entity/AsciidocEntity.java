@@ -3,6 +3,7 @@ package dk.jimmikristensen.aaws.persistence.dao.entity;
 public class AsciidocEntity {
     
     private int id;
+    private String title;
     private int apikeyId;
     private String doc;
     private String owner;
@@ -61,6 +62,20 @@ public class AsciidocEntity {
      */
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
     
 }

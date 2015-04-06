@@ -3,8 +3,6 @@ package dk.jimmikristensen.aaws.persistence.dao;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
-import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
-import dk.jimmikristensen.aaws.webservice.exception.GeneralException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import javax.ws.rs.core.Response;
 
 public class AsciidocDAOImpl implements AsciidocDAO {
 
@@ -24,8 +21,8 @@ public class AsciidocDAOImpl implements AsciidocDAO {
     }
 
     @Override
-    public boolean saveAsciidoc(AsciidocEntity aEntity, TranslationEntity tEntity) {
-        String asciidocQry = "INSERT INTO asciidoc (apikeys_id, doc) VALUES (?, ?)";
+    public boolean saveAsciidoc(AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException {
+        String asciidocQry = "INSERT INTO asciidoc (title, apikeys_id, doc) VALUES (?, ?, ?)";
         String translationQry = "INSERT INTO translation (type, asciidoc_id, doc) VALUES (?, ?, ?)";
 
         Connection conn = null;
@@ -38,11 +35,12 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             conn.setAutoCommit(false);
 
             asciidocStmt = conn.prepareStatement(asciidocQry);
-            asciidocStmt.setInt(1, aEntity.getApikeyId());
-            asciidocStmt.setString(2, aEntity.getDoc());
+            asciidocStmt.setString(1, aEntity.getTitle());
+            asciidocStmt.setInt(2, aEntity.getApikeyId());
+            asciidocStmt.setString(3, aEntity.getDoc());
             asciidocStmt.executeUpdate();
             ResultSet rs = asciidocStmt.getGeneratedKeys();
-
+            
             if (rs.next()) {
                 int insertId = rs.getInt(1);
 
@@ -60,7 +58,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
         } catch (SQLException ex) {
             rollbackTransaction(conn);
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw ex;
             
         } finally {
             try {
@@ -118,6 +116,27 @@ public class AsciidocDAOImpl implements AsciidocDAO {
                        + "WHERE id = ?;";
             PreparedStatement statement = conn.prepareStatement(qry);
             statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                AsciidocEntity entity = new AsciidocEntity();
+                entity.setDoc(resultSet.getString("doc"));
+                return entity;
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public AsciidocEntity getDocumentByTitle(String title) {
+        try (Connection conn = ds.getConnection()) {            
+            String qry = "SELECT doc "
+                       + "FROM asciidoc "
+                       + "WHERE title = ?;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setString(1, title);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 AsciidocEntity entity = new AsciidocEntity();

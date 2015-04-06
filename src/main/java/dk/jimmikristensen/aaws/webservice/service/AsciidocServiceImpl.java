@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -64,7 +65,14 @@ public class AsciidocServiceImpl implements AsciidocService {
             Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         } catch (MissingAsciidocPropertyException ex) {
             Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
-            throw new GeneralException("Missing Asciidoc title", ErrorCode.MISSING_DOC_TITLE, Response.Status.BAD_REQUEST);
+            throw new GeneralException("Missing Asciidoc property ("+ex.getMessage()+")", ErrorCode.MISSING_DOC_PROPERTY, Response.Status.BAD_REQUEST);
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            
+            // Unique index or primary key violation
+            if (ex.getSQLState().equals("23505")) {
+                throw new GeneralException("Document title already exists", ErrorCode.TITLE_ALREADY_EXISTS, Response.Status.BAD_REQUEST);
+            }
         }
         
         throw new GeneralException("An unknown error occured", ErrorCode.UNKNOWN_ERROR, Response.Status.INTERNAL_SERVER_ERROR);
