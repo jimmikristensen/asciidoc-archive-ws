@@ -2,8 +2,9 @@ package dk.jimmikristensen.aaws.webservice.service;
 
 import dk.jimmikristensen.aaws.domain.AsciidocHandler;
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter;
-import dk.jimmikristensen.aaws.domain.asciidoc.GeneralAsciidocConverter;
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter;
+import dk.jimmikristensen.aaws.domain.encryption.SHA1;
+import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
@@ -14,10 +15,13 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
 public class AsciidocServiceImpl implements AsciidocService {
@@ -29,6 +33,8 @@ public class AsciidocServiceImpl implements AsciidocService {
             FormDataContentDisposition fileInfo) {
 
         try {
+            String apikeyEnc = SHA1.encrypt(apikey);
+            
             BufferedInputStream bis = new BufferedInputStream(stream);
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
             int result = bis.read();
@@ -40,7 +46,7 @@ public class AsciidocServiceImpl implements AsciidocService {
 
             DataSourceFactory dsFactory = new JndiDataSourceFactory();
             AsciidocDAO dao = new AsciidocDAOImpl(dsFactory);
-            int apikeyId = dao.getApikeyId(apikey);
+            int apikeyId = dao.getApikeyId(apikeyEnc);
             
             if (apikeyId > 0) {
                 AsciidocConverter converter = new HtmlAsciidocConverter();
@@ -51,10 +57,14 @@ public class AsciidocServiceImpl implements AsciidocService {
                 throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
             }
    
-            return Response.ok().build();
+//            String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
+            return Response.created(null).build();
             
-        } catch (IOException | NamingException ex) {
+        } catch (IOException | NamingException | NoSuchAlgorithmException ex) {
             Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MissingAsciidocPropertyException ex) {
+            Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            throw new GeneralException("Missing Asciidoc title", ErrorCode.MISSING_DOC_TITLE, Response.Status.BAD_REQUEST);
         }
         
         throw new GeneralException("An unknown error occured", ErrorCode.UNKNOWN_ERROR, Response.Status.INTERNAL_SERVER_ERROR);

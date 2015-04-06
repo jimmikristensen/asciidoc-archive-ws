@@ -5,6 +5,7 @@ public class AsciidocEntity {
     private int id;
     private int apikeyId;
     private String doc;
+    private String owner;
 
     /**
      * @return the id
@@ -46,6 +47,20 @@ public class AsciidocEntity {
      */
     public void setDoc(String doc) {
         this.doc = doc;
+    }
+
+    /**
+     * @return the owner
+     */
+    public String getOwner() {
+        return owner;
+    }
+
+    /**
+     * @param owner the owner to set
+     */
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
     
 }

@@ -61,6 +61,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         } catch (SQLException ex) {
             rollbackTransaction(conn);
             Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            
         } finally {
             try {
                 if (asciidocStmt != null) {
@@ -107,6 +108,27 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         }
 
         return 0;
+    }
+
+    @Override
+    public AsciidocEntity getDocument(int id) {
+        try (Connection conn = ds.getConnection()) {            
+            String qry = "SELECT doc "
+                       + "FROM asciidoc "
+                       + "WHERE id = ?;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setInt(1, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                AsciidocEntity entity = new AsciidocEntity();
+                entity.setDoc(resultSet.getString("doc"));
+                return entity;
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
 }

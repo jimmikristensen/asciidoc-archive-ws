@@ -9,7 +9,8 @@ public enum ErrorCode {
     INVALID_PARAM(1004),
     PERSISTENCE_EXCEPTION(1005),
     RESOURCE_NOT_FOUND(1006),
-    INVALID_API_KEY(1007);
+    INVALID_API_KEY(1007),
+    MISSING_DOC_TITLE(1008);
 
     private int code;
 

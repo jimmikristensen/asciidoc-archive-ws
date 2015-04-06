@@ -20,6 +20,7 @@ import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
 import dk.jimmikristensen.aaws.domain.AsciidocHandler
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
+import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
 
 class TestAsciidocStorage extends Specification {
     
@@ -113,13 +114,14 @@ class TestAsciidocStorage extends Specification {
     }
     
     void "simulate convert and store asciidoc using mocks"() {
-        setup:        
+        setup:
         DataSourceFactory dsFactory = new FakeDataSourceFactory();
         AsciidocConverter converter = Mock(HtmlAsciidocConverter);
+        converter.getMainTitle() >> "Test title";
         AsciidocDAO asdDAO = Mock(AsciidocDAOImpl, constructorArgs: [dsFactory]);
         AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
         int apikeyId = 1;
-        String asciiDoc = "Test";
+        String asciiDoc = "= Test\n:title: Sample Document";
         
         when:
         ah.storeAsciidoc(apikeyId, asciiDoc);
@@ -138,13 +140,47 @@ class TestAsciidocStorage extends Specification {
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
         AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
         int apikeyId = 1;
-        String asciiDoc = "Test";
+        String asciiDoc = "= Sample Document";
         
         when:
         boolean status = ah.storeAsciidoc(apikeyId, asciiDoc);
         
         then:
         status == true;
+        converter.getMainTitle() == "Sample Document";
     }
+    
+    void "converting a document without a title results in an exception"() {
+        setup:
+        AsciidocConverter converter = new HtmlAsciidocConverter();
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
+        int apikeyId = 1;
+        String asciiDoc = "Test\n";
+        
+        when:
+        ah.storeAsciidoc(apikeyId, asciiDoc);
+        
+        then:
+        def e = thrown(MissingAsciidocPropertyException);
+        e.message == "Main title not set";
+    }
+    
+    void "get asciidoc as html5"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        
+        when:
+        AsciidocEntity docEntity = asdDAO.getDocument(1);
+        
+        then:
+        docEntity != null;
+        docEntity.getDoc() != "";
+        docEntity.getDoc().startsWith("= Introduction to AsciiDoc") == true;
+        docEntity.getDoc().endsWith("puts \"Hello, World!\"") == true;
+    }
+    
     
 }

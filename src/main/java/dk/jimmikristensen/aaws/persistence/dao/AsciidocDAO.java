@@ -10,4 +10,5 @@ public interface AsciidocDAO {
     
     public int getApikeyId(String apikey);
     
+    public AsciidocEntity getDocument(int id);
 }

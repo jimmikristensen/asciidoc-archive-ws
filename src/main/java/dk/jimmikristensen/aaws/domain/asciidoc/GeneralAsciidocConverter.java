@@ -8,6 +8,7 @@ import org.asciidoctor.ast.Author;
 import org.asciidoctor.ast.DocumentHeader;
 import org.asciidoctor.ast.RevisionInfo;
 import org.asciidoctor.ast.StructuredDocument;
+import org.asciidoctor.ast.Title;
 
 public class GeneralAsciidocConverter implements AsciidocConverter {
     
@@ -22,7 +23,7 @@ public class GeneralAsciidocConverter implements AsciidocConverter {
     
     @Override
     public DocumentHeader getDocHeader() {
-        if (asciidocString == null) { 
+        if (asciidocString == null) {
             return null; 
         }
         header = asciidoctor.readDocumentHeader(asciidocString);
@@ -90,5 +91,17 @@ public class GeneralAsciidocConverter implements AsciidocConverter {
     @Override
     public AsciidocBackend getBackend() {
         return backend;
+    }
+
+    @Override
+    public String getMainTitle() {
+        DocumentHeader header = getDocHeader();
+        if (header != null) {
+            Title docTitle = header.getDocumentTitle();
+            if (docTitle != null) {
+                return docTitle.getMain();
+            }
+        }
+        return null;
     }
 }

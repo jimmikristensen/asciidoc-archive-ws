@@ -14,4 +14,5 @@ public interface AsciidocConverter {
     public void loadString(String docString);
     public String convert();
     public AsciidocBackend getBackend();
+    public String getMainTitle();
 }
