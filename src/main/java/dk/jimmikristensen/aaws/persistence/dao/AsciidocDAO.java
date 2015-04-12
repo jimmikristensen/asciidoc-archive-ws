@@ -3,6 +3,7 @@ package dk.jimmikristensen.aaws.persistence.dao;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import java.sql.SQLException;
+import java.util.List;
 
 
 public interface AsciidocDAO {
@@ -11,7 +12,11 @@ public interface AsciidocDAO {
     
     public int getApikeyId(String apikey);
     
+    public TranslationEntity getTranslation(int id, String type);
+    
     public AsciidocEntity getDocument(int id);
     
     public AsciidocEntity getDocumentByTitle(String title);
+    
+    public List<AsciidocEntity> getDocumentList();
 }

@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -150,4 +152,54 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         return null;
     }
 
+    @Override
+    public List<AsciidocEntity> getDocumentList() {
+        List<AsciidocEntity> entities = new ArrayList<>();
+        
+        try (Connection conn = ds.getConnection()) {  
+            String qry = "SELECT ad.id, title, owner, creationDate "
+                       + "FROM apikeys AS ak, asciidoc AS ad "
+                       + "WHERE ak.id = ad.apikeys_id "
+                       + "ORDER BY creationDate DESC "
+                       + "LIMIT 100;";
+            
+            PreparedStatement statement = conn.prepareStatement(qry);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                AsciidocEntity entity = new AsciidocEntity();
+                entity.setId(rs.getInt("id"));
+                entity.setTitle(rs.getString("title"));
+                entity.setOwner(rs.getString("owner"));
+                entity.setCreationDate(rs.getTimestamp("creationDate"));
+                entities.add(entity);
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return entities;
+    }
+
+    @Override
+    public TranslationEntity getTranslation(int id, String type) {
+        try (Connection conn = ds.getConnection()) {            
+            String qry = "SELECT doc "
+                       + "FROM translation "
+                       + "WHERE type=? AND asciidoc_id = ?;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setString(1, type);
+            statement.setInt(2, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                TranslationEntity entity = new TranslationEntity();
+                entity.setDoc(resultSet.getString("doc"));
+                return entity;
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 }

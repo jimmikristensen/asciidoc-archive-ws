@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
 apply plugin: 'war'
+apply plugin: 'eclipse-wtp'
 
 def dependenciesDir = 'lib'
 

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `asciidoc` (
   `title` VARCHAR(200) NOT NULL,
   `apikeys_id` INT UNSIGNED NOT NULL,
   `doc` MEDIUMTEXT NOT NULL DEFAULT '',
+  `creationDate` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_asciidoc_apikeys_idx` (`apikeys_id` ASC),
   UNIQUE INDEX `UNIQUETITLE` (`title` ASC),

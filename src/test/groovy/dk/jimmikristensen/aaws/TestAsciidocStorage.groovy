@@ -5,8 +5,9 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import spock.lang.Specification
 
+import spock.lang.Specification
+import spock.lang.Unroll;
 import static org.junit.Assert.*
 import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
@@ -21,6 +22,7 @@ import dk.jimmikristensen.aaws.domain.AsciidocHandler
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
 import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
+
 import java.sql.SQLException
 
 class TestAsciidocStorage extends Specification {
@@ -224,5 +226,48 @@ class TestAsciidocStorage extends Specification {
         docEntity.getDoc().startsWith("= Introduction to AsciiDoc") == true;
         docEntity.getDoc().endsWith("puts \"Hello, World!\"") == true;
     }
+    
+    @Unroll
+    void "get document with id #id and title #title from document list"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        
+        when:
+        List<AsciidocEntity> docList = asdDAO.getDocumentList();
+        
+        then:
+        docList.size() == 2;
+        
+        when:
+        AsciidocEntity entity = docList.get(id);
+
+        then:
+        title == entity.getTitle();
+        
+        where:
+        id  | title                         | owner | creationDate
+        0   | 'Introduction to AsciiDoc'    | 1     | '2015-03-31 20:59:59'
+        1   | 'Example of AsciiDoc'         | 1     | '2015-03-30 20:25:01'
+        
+    }
+    
+    void "it returns a HTML formatted string"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory()
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory)
+        def id = 1
+        def type = AsciidocBackend.HTML5.toString()
+        
+        when:
+        TranslationEntity entity = asdDAO.getTranslation(id, type)
+        
+        then:
+        entity != null
+        entity.getDoc() != ''
+        entity.getDoc().startsWith('<div id="preamble">')
+        entity.getDoc().endsWith('</div>')
+    }
+   
     
 }

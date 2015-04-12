@@ -5,11 +5,20 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import spock.lang.Specification
 
+import spock.lang.Specification
 import static org.junit.Assert.*
+import dk.jimmikristensen.aaws.domain.AsciidocHandler;
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
+import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
+import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
+import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
+import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity
+import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
+import dk.jimmikristensen.aaws.persistence.database.DataSources;
+import dk.jimmikristensen.aaws.systemtest.doubles.FakeDataSourceMySql
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
 
 class TestAsciidocConversion extends Specification {
 
@@ -27,6 +36,32 @@ class TestAsciidocConversion extends Specification {
         html.contains("First Section") == true;
         html.contains("Introduction to AsciiDoc") == false;
         html.length() == 513;
+    }
+    
+    void "it converts an asciidoc to HTML and returns it"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory()
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory)
+        AsciidocHandler handler = new AsciidocHandler(new HtmlAsciidocConverter(), asdDAO)
+        def apiKeyId = 1
+        
+        when:
+        def status = handler.storeAsciidoc(apiKeyId, getTestCase("asciidoc-testcase2.adoc"))
+        
+        then:
+        status == true
+        
+        when:
+        def id = 1
+        def type = AsciidocBackend.HTML5.toString()
+        TranslationEntity entity = asdDAO.getTranslation(3, type)
+        
+        then:
+        entity != null
+        entity.getDoc() != ''
+        entity.getDoc().startsWith('<div class="paragraph">')
+        entity.getDoc().endsWith('</div>')
+        
     }
     
     void "get meta data from document"() {
@@ -87,7 +122,6 @@ class TestAsciidocConversion extends Specification {
             return buf.toString();
 
         } catch (IOException ex) {
-            Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

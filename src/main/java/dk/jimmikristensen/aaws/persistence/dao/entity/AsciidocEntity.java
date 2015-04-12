@@ -1,5 +1,7 @@
 package dk.jimmikristensen.aaws.persistence.dao.entity;
 
+import java.util.Date;
+
 public class AsciidocEntity {
     
     private int id;
@@ -7,6 +9,7 @@ public class AsciidocEntity {
     private int apikeyId;
     private String doc;
     private String owner;
+    private Date creationDate;
 
     /**
      * @return the id
@@ -76,6 +79,20 @@ public class AsciidocEntity {
      */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    /**
+     * @return the creationDate
+     */
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    /**
+     * @param creationDate the creationDate to set
+     */
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
     
 }
