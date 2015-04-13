@@ -101,7 +101,7 @@ public class AsciidocServiceImpl implements AsciidocService {
 
                 URI asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc")
                         .queryParam("apikey", "ssdf")
-                        .build(title);
+                        .build(title); 
                 
                 return Response.created(asciidocServicePath).build();
 
