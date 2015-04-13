@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,54 @@ public class TestAsciiService extends JerseyTest {
                 .post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
         
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
-        System.out.println(response.getHeaderString("Location"));
+        assertEquals("http://localhost:9998/asciidoc/Another%20Introduction%20to%20AsciiDoc?apikey="+apikey, response.getHeaderString("Location"));
+    }
+    
+    @Test
+    public void updatingUnknownAsciidocFileShouldResultInNotFound() {
+        String apikey = "testkey";
+        String title = "Another Introduction to AsciiDoc";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "updateFile").build(title).toString();
+        
+        FormDataMultiPart part = getTestCase("asciidoc-testcase5.adoc");
+        
+        Response response = target(asciidocServicePath)
+                .queryParam("apikey", apikey)
+                .request()
+                .put(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
+    }
+    
+    @Test
+    public void UpdatingExistingAsciidocShouldSucceed() {
+        String apikey = "testkey";
+        String title = "Introduction to AsciiDoc"; // this title already exists
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "updateFile").build(title).toString();
+        
+        FormDataMultiPart part = getTestCase("asciidoc-testcase5.adoc");
+        Response response = target(asciidocServicePath)
+                .queryParam("apikey", apikey)
+                .request()
+                .put(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
+        
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        
+        // try to retrieve the updated doc
+        String newTitle = "Another Introduction to AsciiDoc";
+        String getAsciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc").build(newTitle).toString();
+        Response docResponse = target(getAsciidocServicePath)
+                .queryParam("apikey", apikey)
+                .request()
+                .accept(MediaType.TEXT_PLAIN)
+                .get();
+        
+        assertEquals(Response.Status.OK.getStatusCode(), docResponse.getStatus());
+        
+        String docResp = docResponse.readEntity(String.class);
+        System.out.println(docResp);
+        assertTrue(docResp.startsWith("= Another Introduction to AsciiDoc"));
+        assertTrue(docResp.endsWith("puts \"Hello, World!\""));
     }
     
     @Test
@@ -124,6 +172,7 @@ public class TestAsciiService extends JerseyTest {
         String apikey = "testkey";
         String docTitle = "Introduction to AsciiDoc";
         String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc").build(docTitle).toString();
+
         Response response = target(asciidocServicePath)
                 .queryParam("apikey", apikey)
                 .request()
@@ -180,6 +229,8 @@ public class TestAsciiService extends JerseyTest {
                 .accept(MediaType.TEXT_HTML)
                 .get();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        
+        assertEquals("text/html", response.getHeaderString("Content-Type"));
         
         String docResp = response.readEntity(String.class);
         assertTrue(docResp.startsWith("<div id=\"preamble\">"));

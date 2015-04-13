@@ -319,4 +319,21 @@ class TestAsciidocStorage extends Specification {
         docEntity.getDoc().startsWith("= New Sample Document") == true;
     }
     
+    void "attempting to update an asciidoc that does not exist should not be allowed"() {
+        setup:
+        AsciidocConverter converter = new HtmlAsciidocConverter();
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
+        int apikeyId = 1;
+        
+        when:
+        def overwriteTitle = 'Unknown title'
+        def asciiDoc = "= New Sample Document";
+        def docTitle = ah.storeAsciidoc(apikeyId, overwriteTitle, asciiDoc);
+        
+        then:
+        docTitle == null
+    }
+    
 }

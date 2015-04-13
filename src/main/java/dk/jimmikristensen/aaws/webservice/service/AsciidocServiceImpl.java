@@ -87,15 +87,32 @@ public class AsciidocServiceImpl implements AsciidocService {
             InputStream stream, 
             FormDataContentDisposition fileInfo) {
 
-        int apikeyId = getAsciiKeyID(apikey);
-        if (apikeyId > 0) {
-            AsciidocConverter converter = new HtmlAsciidocConverter();
-            AsciidocHandler handler = new AsciidocHandler(converter, dao);
+        try {
+            int apikeyId = getAsciiKeyID(apikey);
+            if (apikeyId > 0) {
+                AsciidocConverter converter = new HtmlAsciidocConverter();
+                AsciidocHandler handler = new AsciidocHandler(converter, dao);
+
+                String docTitle = handler.storeAsciidoc(apikeyId, title, inputStreamToString(stream));
+                if (docTitle == null) {
+                    throw new GeneralException("Failed to store asciidoc",
+                            ErrorCode.UNABLE_TO_STORE_ASCIIDOC, Response.Status.NOT_FOUND);
+                }
+                
+                return Response.noContent().build();
+            }
+
+        } catch (MissingAsciidocPropertyException e) {
+            Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, e);
+            throw new GeneralException("Missing Asciidoc property ("
+                    + e.getMessage() + ")", ErrorCode.MISSING_DOC_PROPERTY,
+                    Response.Status.BAD_REQUEST);
             
-            
+        } catch (SQLException e) {
+            Logger.getLogger(AsciidocServiceImpl.class.getName()).log(Level.SEVERE, null, e);
         }
-        
-        return null;
+
+        throw new GeneralException("An unknown error occured", ErrorCode.UNKNOWN_ERROR, Response.Status.INTERNAL_SERVER_ERROR);
     }
     
     @Override
@@ -118,7 +135,7 @@ public class AsciidocServiceImpl implements AsciidocService {
                 }
 
                 URI asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc")
-                        .queryParam("apikey", "ssdf")
+                        .queryParam("apikey", apikey)
                         .build(title);
                 
                 return Response.created(asciidocServicePath).build();
@@ -151,30 +168,29 @@ public class AsciidocServiceImpl implements AsciidocService {
     @Override
     public Response getAsciidoc(String apikey, String title, String acceptHeader) {
         if (getAsciiKeyID(apikey) > 0) {
-            String doc = getAsciidocBasedOnMediaType(acceptHeader, title);
+            String mediaType = MediaType.TEXT_PLAIN;
+            String doc = null;
+            if (acceptHeader.equals(MediaType.TEXT_HTML)) {
+                mediaType = MediaType.TEXT_HTML;
+                TranslationEntity entity = dao.getTranslation(title, AsciidocBackend.HTML5.toString());
+                if (entity != null) {
+                    doc = entity.getDoc();
+                }
+            } else {
+                AsciidocEntity entity = dao.getDocumentByTitle(title);
+                if (entity != null) {
+                    doc = entity.getDoc();
+                }
+            }
+            
             if (doc != null) {
-                return Response.ok(doc).build();
+                return Response.ok(doc).type(mediaType).build();
             } else {
                 throw new GeneralException("Could not find document", ErrorCode.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND);
             }
         } else {
             throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
         }
-    }
-
-    private String getAsciidocBasedOnMediaType(String acceptHeader, String title) {
-        if (acceptHeader.equals(MediaType.TEXT_HTML)) {
-            TranslationEntity entity = dao.getTranslation(title, AsciidocBackend.HTML5.toString());
-            if (entity != null) {
-                return entity.getDoc();
-            }
-        }
-        AsciidocEntity entity = dao.getDocumentByTitle(title);
-        if (entity != null) {
-            return entity.getDoc();
-        }
-        
-        return null;
     }
     
     @Override
