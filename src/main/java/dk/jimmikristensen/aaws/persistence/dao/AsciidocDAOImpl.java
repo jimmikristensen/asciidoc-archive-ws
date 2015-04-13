@@ -3,6 +3,7 @@ package dk.jimmikristensen.aaws.persistence.dao;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -190,6 +192,28 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             PreparedStatement statement = conn.prepareStatement(qry);
             statement.setString(1, type);
             statement.setInt(2, id);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                TranslationEntity entity = new TranslationEntity();
+                entity.setDoc(resultSet.getString("doc"));
+                return entity;
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public TranslationEntity getTranslation(String title, String type) {
+        try (Connection conn = ds.getConnection()) {            
+            String qry = "SELECT t.doc "
+                       + "FROM asciidoc AS ad, translation AS t "
+                       + "WHERE ad.title = ? AND t.type=?;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setString(1, title);
+            statement.setString(2, type);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 TranslationEntity entity = new TranslationEntity();

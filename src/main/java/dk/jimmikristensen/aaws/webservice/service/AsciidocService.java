@@ -5,7 +5,9 @@ import java.io.InputStream;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -28,6 +30,14 @@ public interface AsciidocService {
             @FormDataParam("file") InputStream stream, 
             @FormDataParam("file") FormDataContentDisposition fileInfo);
     
+    @PUT
+    @Path("/asciidoc/{title}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response updateFile(
+            @DefaultValue("") @QueryParam("apikey") String apikey,
+            @FormDataParam("file") InputStream stream,
+            @FormDataParam("file") FormDataContentDisposition fileInfo);
+    
     @GET
     @Path("/asciidoc/list")
     @Produces(MediaType.APPLICATION_JSON)
@@ -39,5 +49,6 @@ public interface AsciidocService {
     @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
     public Response getAsciidoc(
             @DefaultValue("") @QueryParam("apikey") String apikey,
-            @PathParam("title") String title);
+            @PathParam("title") String title,
+            @HeaderParam("Accept") String header);
 }

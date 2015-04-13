@@ -269,5 +269,21 @@ class TestAsciidocStorage extends Specification {
         entity.getDoc().endsWith('</div>')
     }
    
+    void "it returns html when requesting document by title"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory()
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory)
+        def title = 'Introduction to AsciiDoc'
+        def type = AsciidocBackend.HTML5.toString()
+        
+        when:
+        TranslationEntity entity = asdDAO.getTranslation(title, type)
+        
+        then:
+        entity != null
+        entity.getDoc() != ''
+        entity.getDoc().startsWith('<div id="preamble">')
+        entity.getDoc().endsWith('</div>')
+    }
     
 }

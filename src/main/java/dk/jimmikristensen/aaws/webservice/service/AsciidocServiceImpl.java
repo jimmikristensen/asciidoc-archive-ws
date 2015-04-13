@@ -1,6 +1,7 @@
 package dk.jimmikristensen.aaws.webservice.service;
 
 import dk.jimmikristensen.aaws.domain.AsciidocHandler;
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend;
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter;
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter;
 import dk.jimmikristensen.aaws.domain.encryption.SHA1;
@@ -8,6 +9,7 @@ import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
+import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 import dk.jimmikristensen.aaws.persistence.database.JndiDataSourceFactory;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocList;
@@ -20,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
@@ -27,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.NamingException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -88,11 +92,18 @@ public class AsciidocServiceImpl implements AsciidocService {
             if (apikeyId > 0) {
                 AsciidocConverter converter = new HtmlAsciidocConverter();
                 AsciidocHandler handler = new AsciidocHandler(converter, dao);
-
-                handler.storeAsciidoc(apikeyId, inputStreamToString(stream));
                 
-//              String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "uploadFile").build(apikey).toString();
-                return Response.created(null).build();
+                String title = handler.storeAsciidoc(apikeyId, inputStreamToString(stream));
+                if (title == null) {
+                    throw new GeneralException("Failed to store asciidoc",
+                            ErrorCode.UNABLE_TO_STORE_ASCIIDOC, Response.Status.INTERNAL_SERVER_ERROR);
+                }
+
+                URI asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc")
+                        .queryParam("apikey", "ssdf")
+                        .build(title);
+                
+                return Response.created(asciidocServicePath).build();
 
             } else {
                 throw new GeneralException("Invalid api key",
@@ -120,11 +131,11 @@ public class AsciidocServiceImpl implements AsciidocService {
     }
     
     @Override
-    public Response getAsciidoc(String apikey, String title) {        
+    public Response getAsciidoc(String apikey, String title, String acceptHeader) {
         if (getAsciiKeyID(apikey) > 0) {
-            AsciidocEntity entity = dao.getDocumentByTitle(title);
-            if (entity != null) {
-                return Response.ok(entity.getDoc()).build();
+            String doc = getAsciidocBasedOnMediaType(acceptHeader, title);
+            if (doc != null) {
+                return Response.ok(doc).build();
             } else {
                 throw new GeneralException("Could not find document", ErrorCode.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND);
             }
@@ -133,6 +144,21 @@ public class AsciidocServiceImpl implements AsciidocService {
         }
     }
 
+    private String getAsciidocBasedOnMediaType(String acceptHeader, String title) {
+        if (acceptHeader.equals(MediaType.TEXT_HTML)) {
+            TranslationEntity entity = dao.getTranslation(title, AsciidocBackend.HTML5.toString());
+            if (entity != null) {
+                return entity.getDoc();
+            }
+        }
+        AsciidocEntity entity = dao.getDocumentByTitle(title);
+        if (entity != null) {
+            return entity.getDoc();
+        }
+        
+        return null;
+    }
+    
     @Override
     public Response listAsciidocs(String apikey) {
         int apikeyId = getAsciiKeyID(apikey);
@@ -155,6 +181,13 @@ public class AsciidocServiceImpl implements AsciidocService {
         } else {
             throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
         }
+    }
+
+    @Override
+    public Response updateFile(String apikey, InputStream stream,
+            FormDataContentDisposition fileInfo) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

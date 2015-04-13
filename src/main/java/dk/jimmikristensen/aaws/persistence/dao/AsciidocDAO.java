@@ -14,6 +14,8 @@ public interface AsciidocDAO {
     
     public TranslationEntity getTranslation(int id, String type);
     
+    public TranslationEntity getTranslation(String title, String type);
+    
     public AsciidocEntity getDocument(int id);
     
     public AsciidocEntity getDocumentByTitle(String title);

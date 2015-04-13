@@ -68,6 +68,7 @@ public class TestAsciiService extends JerseyTest {
                 .post(Entity.entity(part, MediaType.MULTIPART_FORM_DATA), Response.class);
         
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        System.out.println(response.getHeaderString("Location"));
     }
     
     @Test
@@ -168,6 +169,23 @@ public class TestAsciiService extends JerseyTest {
         assertEquals("2015-03-30T20:25:01+0200", dateAdaptor.marshal(props.getCreationDate()));
     }
 
+    @Test
+    public void getDocumentAsHtml() {
+        String apikey = "testkey";
+        String docTitle = "Introduction to AsciiDoc";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc").build(docTitle).toString();
+        Response response = target(asciidocServicePath)
+                .queryParam("apikey", apikey)
+                .request()
+                .accept(MediaType.TEXT_HTML)
+                .get();
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        
+        String docResp = response.readEntity(String.class);
+        assertTrue(docResp.startsWith("<div id=\"preamble\">"));
+        assertTrue(docResp.endsWith("</div>"));
+    }
+    
     private FormDataMultiPart getTestCase(String fileName) {
         InputStream is = getClass().getResourceAsStream("/"+fileName);
 

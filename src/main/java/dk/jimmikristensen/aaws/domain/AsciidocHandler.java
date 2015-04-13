@@ -17,7 +17,7 @@ public class AsciidocHandler {
         this.dao = dao;
     }
 
-    public boolean storeAsciidoc(int apikeyId, String asciiDoc) throws MissingAsciidocPropertyException, SQLException {
+    public String storeAsciidoc(int apikeyId, String asciiDoc) throws MissingAsciidocPropertyException, SQLException {
         converter.loadString(asciiDoc);
         String convertedDoc = converter.convert();
         
@@ -35,7 +35,11 @@ public class AsciidocHandler {
         tEntity.setDoc(convertedDoc);
         tEntity.setType(converter.getBackend());
         
-        return dao.saveAsciidoc(aEntity, tEntity);
+        boolean isSaved = dao.saveAsciidoc(aEntity, tEntity);
+        if (isSaved) {
+            return docTitle;
+        }
+        return null;
     }
 
 }
