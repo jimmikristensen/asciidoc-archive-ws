@@ -10,6 +10,8 @@ public interface AsciidocDAO {
     
     public boolean saveAsciidoc(AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException;
     
+    public boolean saveAsciidoc(String title, AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException;
+    
     public int getApikeyId(String apikey);
     
     public TranslationEntity getTranslation(int id, String type);

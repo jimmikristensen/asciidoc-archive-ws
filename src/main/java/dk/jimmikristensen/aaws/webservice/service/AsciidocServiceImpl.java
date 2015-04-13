@@ -81,6 +81,24 @@ public class AsciidocServiceImpl implements AsciidocService {
     }
     
     @Override
+    public Response updateFile(
+            String apikey, 
+            String title,
+            InputStream stream, 
+            FormDataContentDisposition fileInfo) {
+
+        int apikeyId = getAsciiKeyID(apikey);
+        if (apikeyId > 0) {
+            AsciidocConverter converter = new HtmlAsciidocConverter();
+            AsciidocHandler handler = new AsciidocHandler(converter, dao);
+            
+            
+        }
+        
+        return null;
+    }
+    
+    @Override
     public Response uploadFile(
             String apikey,
             InputStream stream,
@@ -101,7 +119,7 @@ public class AsciidocServiceImpl implements AsciidocService {
 
                 URI asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc")
                         .queryParam("apikey", "ssdf")
-                        .build(title); 
+                        .build(title);
                 
                 return Response.created(asciidocServicePath).build();
 
@@ -181,13 +199,6 @@ public class AsciidocServiceImpl implements AsciidocService {
         } else {
             throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
         }
-    }
-
-    @Override
-    public Response updateFile(String apikey, InputStream stream,
-            FormDataContentDisposition fileInfo) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }

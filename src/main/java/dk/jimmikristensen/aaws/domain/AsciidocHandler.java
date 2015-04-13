@@ -17,6 +17,32 @@ public class AsciidocHandler {
         this.dao = dao;
     }
 
+    public String storeAsciidoc(int apikeyId, String title, String asciiDoc) throws MissingAsciidocPropertyException, SQLException {
+        converter.loadString(asciiDoc);
+        String convertedDoc = converter.convert();
+        
+        String docTitle = converter.getMainTitle();
+        if (docTitle == null) {
+            throw new MissingAsciidocPropertyException("Main title not set");
+        }
+
+        AsciidocEntity aEntity = new AsciidocEntity();
+        aEntity.setApikeyId(apikeyId);
+        aEntity.setTitle(docTitle);
+        aEntity.setDoc(asciiDoc);
+        
+        TranslationEntity tEntity = new TranslationEntity();
+        tEntity.setDoc(convertedDoc);
+        tEntity.setType(converter.getBackend());
+        
+        boolean isSaved = dao.saveAsciidoc(title, aEntity, tEntity);
+        if (isSaved) {
+            return docTitle;
+        }
+        
+        return null;
+    }
+    
     public String storeAsciidoc(int apikeyId, String asciiDoc) throws MissingAsciidocPropertyException, SQLException {
         converter.loadString(asciiDoc);
         String convertedDoc = converter.convert();

@@ -23,11 +23,65 @@ public class AsciidocDAOImpl implements AsciidocDAO {
     public AsciidocDAOImpl(DataSourceFactory dsFactory) throws NamingException {
         ds = dsFactory.getDataSource("asciidoc_service");
     }
+    
+    @Override
+    public boolean saveAsciidoc(String title, AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException {
+        String asciidocQry = "UPDATE asciidoc SET title=?, apikeys_id=?, doc=? WHERE title=?;";
+        String translationQry = "UPDATE translation SET type=?, doc=?;";
+        
+        Connection conn = null;
+        PreparedStatement asciidocStmt = null;
+        PreparedStatement translationStmt = null;
+        boolean status = false;
+        
+        try {
+            conn = ds.getConnection();
+            conn.setAutoCommit(false);
+            
+            asciidocStmt = conn.prepareStatement(asciidocQry);
+            asciidocStmt.setString(1, aEntity.getTitle());
+            asciidocStmt.setInt(2, aEntity.getApikeyId());
+            asciidocStmt.setString(3, aEntity.getDoc());
+            asciidocStmt.setString(4, title);
+            int rowsAffected = asciidocStmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                translationStmt = conn.prepareStatement(translationQry);
+                translationStmt.setString(1, tEntity.getType().toString());
+                translationStmt.setString(2, tEntity.getDoc());
+                translationStmt.executeUpdate();
+                conn.commit();
+
+                status = true;
+            }
+
+        } catch (SQLException ex) {
+            rollbackTransaction(conn);
+            throw ex;
+        } finally {
+            try {
+                if (asciidocStmt != null) {
+                    asciidocStmt.close();
+                }
+                if (translationStmt != null) {
+                    translationStmt.close();
+                }
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return status;
+    }
 
     @Override
     public boolean saveAsciidoc(AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException {
-        String asciidocQry = "INSERT INTO asciidoc (title, apikeys_id, doc) VALUES (?, ?, ?)";
-        String translationQry = "INSERT INTO translation (type, asciidoc_id, doc) VALUES (?, ?, ?)";
+        String asciidocQry = "INSERT INTO asciidoc (title, apikeys_id, doc) VALUES (?, ?, ?);";
+        String translationQry = "INSERT INTO translation (type, asciidoc_id, doc) VALUES (?, ?, ?);";
 
         Connection conn = null;
         PreparedStatement asciidocStmt = null;

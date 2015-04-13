@@ -46,10 +46,10 @@ class TestAsciidocConversion extends Specification {
         def apiKeyId = 1
         
         when:
-        def status = handler.storeAsciidoc(apiKeyId, getTestCase("asciidoc-testcase2.adoc"))
+        def title = handler.storeAsciidoc(apiKeyId, getTestCase("asciidoc-testcase2.adoc"))
         
         then:
-        status == true
+        title == 'Sample Document'
         
         when:
         def id = 1

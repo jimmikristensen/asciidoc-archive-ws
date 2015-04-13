@@ -286,4 +286,37 @@ class TestAsciidocStorage extends Specification {
         entity.getDoc().endsWith('</div>')
     }
     
+    void "it updates existing asciidoc with title"() {
+        setup:
+        AsciidocConverter converter = new HtmlAsciidocConverter();
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        AsciidocHandler ah = new AsciidocHandler(converter, asdDAO);
+        int apikeyId = 1;
+        String asciiDoc = "= Sample Document";
+        
+        when:
+        boolean status = ah.storeAsciidoc(apikeyId, asciiDoc);
+        
+        then:
+        status == true;
+        converter.getMainTitle() == "Sample Document";
+        
+        when:
+        def overwriteTitle = 'Sample Document'
+        asciiDoc = "= New Sample Document";
+        def docTitle = ah.storeAsciidoc(apikeyId, overwriteTitle, asciiDoc);
+        
+        then:
+        docTitle == 'New Sample Document'
+        
+        when:
+        AsciidocEntity docEntity = asdDAO.getDocumentByTitle("New Sample Document");
+        
+        then:
+        docEntity != null;
+        docEntity.getDoc() != "";
+        docEntity.getDoc().startsWith("= New Sample Document") == true;
+    }
+    
 }
