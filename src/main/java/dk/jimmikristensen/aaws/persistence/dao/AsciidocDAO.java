@@ -2,6 +2,7 @@ package dk.jimmikristensen.aaws.persistence.dao;
 
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
+
 import java.sql.SQLException;
 import java.util.List;
 

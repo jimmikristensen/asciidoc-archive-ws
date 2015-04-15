@@ -1,6 +1,7 @@
 package dk.jimmikristensen.aaws.persistence.dao;
 
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
+import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 
@@ -85,6 +86,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
         Connection conn = null;
         PreparedStatement asciidocStmt = null;
+        PreparedStatement categoryStmt = null;
         PreparedStatement translationStmt = null;
         boolean status = false;
 
@@ -100,11 +102,28 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             ResultSet rs = asciidocStmt.getGeneratedKeys();
             
             if (rs.next()) {
-                int insertId = rs.getInt(1);
+                int asciidocId = rs.getInt(1);
 
+                if (aEntity.getCategoryEntities() != null) {
+                    StringBuilder valuesStmtBuilder = new StringBuilder();
+                    for (int i = 0; i < aEntity.getCategoryEntities().size(); i++) {
+                        valuesStmtBuilder.append("(?, ?),");
+                    }
+                    String valuesStmt = valuesStmtBuilder.substring(0, valuesStmtBuilder.toString().length()-1);
+                    String categoryQry = "INSERT INTO category (name, asciidoc_id) VALUES "+valuesStmt+";";
+                    
+                    categoryStmt = conn.prepareStatement(categoryQry);
+                    for (int i = 0; i < aEntity.getCategoryEntities().size(); i++) {
+                        String catName = aEntity.getCategoryEntities().get(i).getName();
+                        categoryStmt.setString(i+1, catName);
+                        categoryStmt.setInt(i+2, asciidocId);
+                    }
+                    categoryStmt.executeUpdate();
+                }
+                
                 translationStmt = conn.prepareStatement(translationQry);
                 translationStmt.setString(1, tEntity.getType().toString());
-                translationStmt.setInt(2, insertId);
+                translationStmt.setInt(2, asciidocId);
                 translationStmt.setString(3, tEntity.getDoc());
                 translationStmt.executeUpdate();
                 conn.commit();

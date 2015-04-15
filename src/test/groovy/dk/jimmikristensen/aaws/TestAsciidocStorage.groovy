@@ -15,6 +15,7 @@ import dk.jimmikristensen.aaws.doubles.FakeDataSourceMySql
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity
+import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity
 import dk.jimmikristensen.aaws.domain.encryption.SHA1
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
@@ -34,6 +35,31 @@ class TestAsciidocStorage extends Specification {
         expect:
         ciphertext.length() == 40;
         ciphertext == "e39454df9247edb7e397a22a794b86a136a0ac8d";
+    }
+    
+    void "adding asciidoc with categories"() {
+        setup:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
+        AsciidocEntity aEntity = new AsciidocEntity();
+        aEntity.setApikeyId(1);
+        aEntity.setTitle("Some title");
+        aEntity.setDoc("Test");
+        CategoryEntity cEntity = new CategoryEntity();
+        cEntity.setAsciidocId(1);
+        cEntity.setName("Test1");
+        List<CategoryEntity> categoryList = new ArrayList<>();
+        categoryList.add(cEntity);
+        aEntity.setCategoryEntities(categoryList);
+        TranslationEntity tEntity = new TranslationEntity();
+        tEntity.setType(AsciidocBackend.HTML5);
+        tEntity.setDoc("<p>Test</p>");
+        
+        when:
+        boolean status = asdDAO.saveAsciidoc(aEntity, tEntity);
+        
+        then:
+        status == true;
     }
     
     void "get id of existing api key"() {

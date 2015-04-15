@@ -1,6 +1,7 @@
 package dk.jimmikristensen.aaws.persistence.dao.entity;
 
 import java.util.Date;
+import java.util.List;
 
 public class AsciidocEntity {
     
@@ -10,6 +11,15 @@ public class AsciidocEntity {
     private String doc;
     private String owner;
     private Date creationDate;
+    private List<CategoryEntity> categoryEntities;
+
+    public List<CategoryEntity> getCategoryEntities() {
+        return categoryEntities;
+    }
+
+    public void setCategoryEntities(List<CategoryEntity> categoryEntities) {
+        this.categoryEntities = categoryEntities;
+    }
 
     /**
      * @return the id
