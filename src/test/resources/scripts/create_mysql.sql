@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS `asciidoc`;
 CREATE TABLE IF NOT EXISTS `asciidoc` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(200) NOT NULL,
-  `apikeys_id` INT UNSIGNED NOT NULL,
+  `apikeys_id` INT UNSIGNED NULL,
   `doc` MEDIUMTEXT NOT NULL DEFAULT '',
   `creationDate` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `asciidoc` (
   CONSTRAINT `fk_asciidoc_apikeys`
     FOREIGN KEY (`apikeys_id`)
     REFERENCES `apikeys` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE SET NULL
     ON UPDATE NO ACTION
 );
 
@@ -34,6 +34,19 @@ CREATE TABLE IF NOT EXISTS `translation` (
   CONSTRAINT `fk_translation_asciidoc1`
     FOREIGN KEY (`asciidoc_id`)
     REFERENCES `asciidoc` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION
+);
+
+DROP TABLE IF EXISTS `category`;
+CREATE TABLE IF NOT EXISTS `category` (
+  `name` VARCHAR(50) NOT NULL,
+  `asciidoc_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`name`, `asciidoc_id`),
+  INDEX `fk_category_asciidoc1_idx` (`asciidoc_id` ASC),
+  CONSTRAINT `fk_category_asciidoc1`
+    FOREIGN KEY (`asciidoc_id`)
+    REFERENCES `asciidoc` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION
 );

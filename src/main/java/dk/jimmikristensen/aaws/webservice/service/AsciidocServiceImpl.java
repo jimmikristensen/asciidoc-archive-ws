@@ -118,6 +118,7 @@ public class AsciidocServiceImpl implements AsciidocService {
     @Override
     public Response uploadFile(
             String apikey,
+            List<String> categories,
             InputStream stream,
             FormDataContentDisposition fileInfo) {
         

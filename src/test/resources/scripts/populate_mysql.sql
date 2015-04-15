@@ -53,3 +53,7 @@ INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 1, '<div id=
     </div>
     </div>
     </div>');
+    
+INSERT INTO category (name, asciidoc_id) VALUES ('Introduction', 1);
+INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 1);
+INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 2);

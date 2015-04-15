@@ -1,6 +1,7 @@
 package dk.jimmikristensen.aaws.webservice.service;
 
 import java.io.InputStream;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -27,6 +28,7 @@ public interface AsciidocService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response uploadFile(
             @DefaultValue("") @QueryParam("apikey") String apikey,
+            @QueryParam("catrgory") final List<String> categories,
             @FormDataParam("file") InputStream stream, 
             @FormDataParam("file") FormDataContentDisposition fileInfo);
     
