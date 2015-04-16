@@ -93,7 +93,6 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         try {
             conn = ds.getConnection();
             conn.setAutoCommit(false);
-
             asciidocStmt = conn.prepareStatement(asciidocQry);
             asciidocStmt.setString(1, aEntity.getTitle());
             asciidocStmt.setInt(2, aEntity.getApikeyId());
@@ -246,6 +245,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
                 entity.setTitle(rs.getString("title"));
                 entity.setOwner(rs.getString("owner"));
                 entity.setCreationDate(rs.getTimestamp("creationDate"));
+                entity.setCategoryEntities(getCategories(rs.getInt("id")));
                 entities.add(entity);
             }
             
@@ -256,6 +256,26 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         return entities;
     }
 
+    private List<CategoryEntity> getCategories(int asciidocId) {
+        try (Connection conn = ds.getConnection()) {  
+            List<CategoryEntity> cList = new ArrayList<>();
+            String qry = "SELECT name FROM category WHERE asciidoc_id = ?;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setInt(1, asciidocId);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                CategoryEntity cEntity = new CategoryEntity();
+                cEntity.setAsciidocId(asciidocId);
+                cEntity.setName(rs.getString("name"));
+                cList.add(cEntity);
+            }
+            return cList;
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     @Override
     public TranslationEntity getTranslation(int id, String type) {
         try (Connection conn = ds.getConnection()) {            

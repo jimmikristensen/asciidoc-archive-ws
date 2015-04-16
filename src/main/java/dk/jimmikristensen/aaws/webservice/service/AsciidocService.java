@@ -37,6 +37,7 @@ public interface AsciidocService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response updateFile(
             @DefaultValue("") @QueryParam("apikey") String apikey,
+            @QueryParam("catrgory") final List<String> categories,
             @PathParam("title") String title,
             @FormDataParam("file") InputStream stream,
             @FormDataParam("file") FormDataContentDisposition fileInfo);

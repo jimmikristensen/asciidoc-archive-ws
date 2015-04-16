@@ -1,30 +1,25 @@
 package dk.jimmikristensen.aaws
 
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import static org.junit.Assert.*
+
+import java.sql.SQLException
 
 import spock.lang.Specification
-import spock.lang.Unroll;
-import static org.junit.Assert.*
+import spock.lang.Unroll
+import dk.jimmikristensen.aaws.domain.AsciidocHandler
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
+import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
+import dk.jimmikristensen.aaws.domain.encryption.SHA1
+import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
 import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
-import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
-import dk.jimmikristensen.aaws.doubles.FakeDataSourceMySql
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity
-import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
+import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity
-import dk.jimmikristensen.aaws.domain.encryption.SHA1
-import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
-import dk.jimmikristensen.aaws.domain.AsciidocHandler
-import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
-import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
-import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
-
-import java.sql.SQLException
+import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
+import dk.jimmikristensen.aaws.webservice.dto.response.adaptor.DateAdapter
 
 class TestAsciidocStorage extends Specification {
     
@@ -60,6 +55,21 @@ class TestAsciidocStorage extends Specification {
         
         then:
         status == true;
+        
+        when:
+        List<AsciidocEntity> docList = asdDAO.getDocumentList()
+        
+        then:
+        docList.size() == 3;
+        
+        when:
+        AsciidocEntity entity = docList.get(0);
+
+        then:
+        3 == entity.getId()
+        'Some title' == entity.getTitle();
+        'test@jimmikristensen.dk' == entity.getOwner();
+        
     }
     
     void "get id of existing api key"() {
@@ -267,14 +277,17 @@ class TestAsciidocStorage extends Specification {
         
         when:
         AsciidocEntity entity = docList.get(id);
+        DateAdapter adaptor = new DateAdapter();
 
         then:
         title == entity.getTitle();
+        owner == entity.getOwner();
+        creationDate == adaptor.marshal(entity.getCreationDate());
         
         where:
-        id  | title                         | owner | creationDate
-        0   | 'Introduction to AsciiDoc'    | 1     | '2015-03-31 20:59:59'
-        1   | 'Example of AsciiDoc'         | 1     | '2015-03-30 20:25:01'
+        id  | title                         | owner                     | creationDate
+        0   | 'Introduction to AsciiDoc'    | 'test@jimmikristensen.dk' | '2015-03-31T20:59:59+0200'
+        1   | 'Example of AsciiDoc'         | 'test@jimmikristensen.dk' | '2015-03-30T20:25:01+0200'
         
     }
     
