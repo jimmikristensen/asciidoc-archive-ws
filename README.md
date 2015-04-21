@@ -1,2 +1,2 @@
 # asciidoc-archive-ws
-A REST webservice for storring/converting/retrievning asciidoc files
+A REST webservice for storing/converting/retrievning asciidoc files
