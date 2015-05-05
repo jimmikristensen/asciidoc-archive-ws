@@ -1,5 +1,26 @@
 package dk.jimmikristensen.aaws.webservice.service;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.naming.NamingException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+
 import dk.jimmikristensen.aaws.domain.AsciidocHandler;
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend;
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter;
@@ -18,26 +39,6 @@ import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocList;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocProperties;
 import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
 import dk.jimmikristensen.aaws.webservice.exception.GeneralException;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.naming.NamingException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 
 public class AsciidocServiceImpl implements AsciidocService {
     
@@ -171,7 +172,7 @@ public class AsciidocServiceImpl implements AsciidocService {
     }
     
     @Override
-    public Response getAsciidoc(String apikey, String title, String acceptHeader) {
+    public Response getAsciidoc(boolean download, String apikey, String title, String acceptHeader) {
         if (getAsciiKeyID(apikey) > 0) {
             String mediaType = MediaType.TEXT_PLAIN;
             String doc = null;
@@ -189,7 +190,13 @@ public class AsciidocServiceImpl implements AsciidocService {
             }
             
             if (doc != null) {
-                return Response.ok(doc).type(mediaType).build();
+                if (download) {
+                    return Response.ok(doc)
+                            .header("Content-Disposition", "attachment; filename=\""+title+".adoc\"")
+                            .type(mediaType).build();
+                } else {
+                    return Response.ok(doc).type(mediaType).build();
+                }
             } else {
                 throw new GeneralException("Could not find document", ErrorCode.RESOURCE_NOT_FOUND, Response.Status.NOT_FOUND);
             }

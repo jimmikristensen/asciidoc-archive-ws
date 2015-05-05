@@ -52,6 +52,7 @@ public interface AsciidocService {
     @Path("/asciidoc/{title}")
     @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
     public Response getAsciidoc(
+            @DefaultValue("false") @QueryParam("download") boolean download,
             @DefaultValue("") @QueryParam("apikey") String apikey,
             @PathParam("title") String title,
             @HeaderParam("Accept") String header);

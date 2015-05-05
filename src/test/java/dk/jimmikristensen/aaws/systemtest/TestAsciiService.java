@@ -186,6 +186,26 @@ public class TestAsciiService extends JerseyTest {
     }
     
     @Test
+    public void downloadAsciidocByTitle() {
+        String apikey = "testkey";
+        String docTitle = "Introduction to AsciiDoc";
+        String asciidocServicePath = UriBuilder.fromMethod(AsciidocService.class, "getAsciidoc").build(docTitle).toString();
+
+        Response response = target(asciidocServicePath)
+                .queryParam("apikey", apikey)
+                .queryParam("download", true)
+                .request()
+                .get();
+        
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        
+        String docResp = response.readEntity(String.class);
+        assertEquals("attachment; filename=\"Introduction to AsciiDoc.adoc\"", response.getHeaderString("Content-Disposition"));
+        assertTrue(docResp.startsWith("= Introduction to AsciiDoc"));
+        assertTrue(docResp.endsWith("puts \"Hello, World!\""));
+    }
+    
+    @Test
     public void getAsciidocByUnknownTitle() {
         String apikey = "testkey";
         String docTitle = "Unknown title";
