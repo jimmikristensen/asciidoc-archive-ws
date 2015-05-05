@@ -210,12 +210,14 @@ public class TestAsciiService extends JerseyTest {
         assertEquals("test@jimmikristensen.dk", props.getOwner());
         assertEquals("Introduction to AsciiDoc", props.getTitle());
         assertEquals("2015-03-31T20:59:59+0200", dateAdaptor.marshal(props.getCreationDate()));
-        
+        assertEquals(2, props.getCategories().size());
+
         props = docList.getProps().get(1);
         assertEquals(2, props.getId());
         assertEquals("test@jimmikristensen.dk", props.getOwner());
         assertEquals("Example of AsciiDoc", props.getTitle());
         assertEquals("2015-03-30T20:25:01+0200", dateAdaptor.marshal(props.getCreationDate()));
+        assertEquals(1, props.getCategories().size());
     }
 
     @Test

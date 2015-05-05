@@ -1,6 +1,7 @@
 package dk.jimmikristensen.aaws.webservice.dto.response;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,12 +28,23 @@ public class AsciidocProperties {
     @XmlJavaTypeAdapter(DateAdapter.class)
     private Date creationDate;
     
+    @XmlElement(name = "categories")
+    private List<AsciidocCatrgory> categories;
+    
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public List<AsciidocCatrgory> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<AsciidocCatrgory> categories) {
+        this.categories = categories;
     }
 
     public String getTitle() {

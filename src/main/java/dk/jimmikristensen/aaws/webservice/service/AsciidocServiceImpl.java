@@ -9,9 +9,11 @@ import dk.jimmikristensen.aaws.domain.exception.MissingAsciidocPropertyException
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
+import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 import dk.jimmikristensen.aaws.persistence.database.JndiDataSourceFactory;
+import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocCatrgory;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocList;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocProperties;
 import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
@@ -25,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -209,6 +212,17 @@ public class AsciidocServiceImpl implements AsciidocService {
                 props.setTitle(entity.getTitle());
                 props.setOwner(entity.getOwner());
                 props.setCreationDate(entity.getCreationDate());
+                
+                List<AsciidocCatrgory> categoryList = new ArrayList<>();
+                if (entity.getCategoryEntities() != null) {
+                    for (CategoryEntity catEntity : entity.getCategoryEntities()) {
+                        AsciidocCatrgory asciidocCat = new AsciidocCatrgory();
+                        asciidocCat.setName(catEntity.getName());
+                        categoryList.add(asciidocCat);
+                    }
+                }
+                
+                props.setCategories(categoryList);
                 list.addProp(props);
             }
 
