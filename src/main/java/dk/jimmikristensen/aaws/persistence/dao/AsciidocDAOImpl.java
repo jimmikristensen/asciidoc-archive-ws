@@ -312,7 +312,9 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         try (Connection conn = ds.getConnection()) {            
             String qry = "SELECT t.doc "
                        + "FROM asciidoc AS ad, translation AS t "
-                       + "WHERE ad.title = ? AND t.type=?;";
+                       + "WHERE ad.id=t.asciidoc_id "
+                       + "AND ad.title = ? "
+                       + "AND t.type=?;";
             PreparedStatement statement = conn.prepareStatement(qry);
             statement.setString(1, title);
             statement.setString(2, type);
