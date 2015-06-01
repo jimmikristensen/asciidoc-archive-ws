@@ -15,11 +15,12 @@ public class HtmlAsciidocConverter extends GeneralAsciidocConverter {
         
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("backend", backend.getbackend());
+        attributes.put("source-highlighter", "highlightjs");
         
         Map<String, Object> options = new HashMap<>();
-        options.put("attributes", attributes);        
+        options.put("attributes", attributes);
 
-        return asciidoctor.convert(asciidocString, new HashMap<>());
+        return asciidoctor.convert(asciidocString, options);
     }
     
 }

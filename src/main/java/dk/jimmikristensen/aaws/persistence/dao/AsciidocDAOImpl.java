@@ -186,7 +186,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
     @Override
     public AsciidocEntity getDocument(int id) {
-        try (Connection conn = ds.getConnection()) {            
+        try (Connection conn = ds.getConnection()) {
             String qry = "SELECT doc "
                        + "FROM asciidoc "
                        + "WHERE id = ?;";
@@ -207,7 +207,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
     @Override
     public AsciidocEntity getDocumentByTitle(String title) {
-        try (Connection conn = ds.getConnection()) {            
+        try (Connection conn = ds.getConnection()) {
             String qry = "SELECT doc "
                        + "FROM asciidoc "
                        + "WHERE title = ?;";
@@ -227,15 +227,24 @@ public class AsciidocDAOImpl implements AsciidocDAO {
     }
 
     @Override
-    public List<AsciidocEntity> getDocumentList() {
+    public List<AsciidocEntity> getDocumentList(int offset, int limit, List<String> categories) {
         List<AsciidocEntity> entities = new ArrayList<>();
+        int qryLimit = 100;
+        if (limit > 0) {
+            qryLimit = limit;
+        }
+        
+        String qryOffset = "";
+        if (offset > 0) {
+            qryOffset = "OFFSET "+offset;
+        }
         
         try (Connection conn = ds.getConnection()) {  
             String qry = "SELECT ad.id, title, owner, creationDate "
                        + "FROM apikeys AS ak, asciidoc AS ad "
                        + "WHERE ak.id = ad.apikeys_id "
                        + "ORDER BY creationDate DESC "
-                       + "LIMIT 100;";
+                       + "LIMIT "+qryLimit+" "+qryOffset+";";
             
             PreparedStatement statement = conn.prepareStatement(qry);
             ResultSet rs = statement.executeQuery();

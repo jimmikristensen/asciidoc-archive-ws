@@ -1,14 +1,14 @@
+
+
 package dk.jimmikristensen.aaws
 
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import static org.junit.Assert.*
+
+import org.asciidoctor.ast.ContentPart
 
 import spock.lang.Specification
-import static org.junit.Assert.*
-import dk.jimmikristensen.aaws.domain.AsciidocHandler;
+import dk.jimmikristensen.aaws.domain.AsciidocHandler
+import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
 import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
@@ -16,9 +16,6 @@ import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
 import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
-import dk.jimmikristensen.aaws.persistence.database.DataSources;
-import dk.jimmikristensen.aaws.systemtest.doubles.FakeDataSourceMySql
-import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
 
 class TestAsciidocConversion extends Specification {
 
@@ -103,6 +100,32 @@ class TestAsciidocConversion extends Specification {
         null == converter.getRevisionInfo().getDate();
         null != converter.getDocHeader();
         null == converter.getDocHeader().getDocumentTitle();
+    }
+    
+    void "sdfsf"() {
+        given:
+        AsciidocConverter converter = new HtmlAsciidocConverter()
+        
+        when:
+        converter.loadString(getTestCase("asciidoc-testcase7.adoc"))
+        def doc = converter.getDocument()
+        def html = converter.convert()
+
+        println html
+        
+        println '----------------'
+        
+        for (ContentPart part : doc.getParts()){
+            println '########################'
+            System.out.println(part.getTitle());
+            System.out.println(part.getContent());
+
+          }
+        
+//        String html = converter.convert()
+        
+        then:
+        println ''
     }
     
     private String getTestCase(String fileName) {

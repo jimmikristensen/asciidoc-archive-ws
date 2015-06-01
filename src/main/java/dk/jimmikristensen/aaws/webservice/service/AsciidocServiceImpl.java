@@ -206,11 +206,11 @@ public class AsciidocServiceImpl implements AsciidocService {
     }
     
     @Override
-    public Response listAsciidocs(String apikey) {
+    public Response listAsciidocs(String apikey, int offset, int limit, List<String> categories) {
         int apikeyId = getAsciiKeyID(apikey);
         
         if (apikeyId > 0) {
-            List<AsciidocEntity> entities = dao.getDocumentList();
+            List<AsciidocEntity> entities = dao.getDocumentList(offset, limit, categories);
             AsciidocList list = new AsciidocList();
             
             for (AsciidocEntity entity : entities) {

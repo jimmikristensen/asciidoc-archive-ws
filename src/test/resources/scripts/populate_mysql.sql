@@ -26,6 +26,26 @@ A preface about http://asciidoc.org[AsciiDoc].
 [source,java]
 puts "Hello, World!"');
 
+INSERT INTO asciidoc (title, apikeys_id, creationDate, doc) VALUES ('Source code listing', 1, '2015-03-30 20:25:01', '= Source code listing
+ 
+Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.
+ 
+[source,groovy]
+----
+// File: User.groovy
+class User {
+String username
+}
+----
+ 
+[source,sql]
+----
+CREATE TABLE USER (
+ID INT NOT NULL,
+USERNAME VARCHAR(40) NOT NULL
+);
+----');
+
 INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 1, '<div id="preamble">
     <div class="sectionbody">
     <div class="paragraph">
@@ -54,6 +74,27 @@ INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 1, '<div id=
     </div>
     </div>');
     
+INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 3, '<div class="paragraph">
+<p>Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy" data-lang="groovy">// File: User.groovy
+class User {
+String username
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sql" data-lang="sql">CREATE TABLE USER (
+ID INT NOT NULL,
+USERNAME VARCHAR(40) NOT NULL
+);</code></pre>
+</div>
+</div>');
+    
 INSERT INTO category (name, asciidoc_id) VALUES ('Introduction', 1);
 INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 1);
 INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 2);
+INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 3);

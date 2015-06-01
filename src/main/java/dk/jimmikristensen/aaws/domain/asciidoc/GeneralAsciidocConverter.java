@@ -19,6 +19,7 @@ public class GeneralAsciidocConverter implements AsciidocConverter {
     
     public GeneralAsciidocConverter() {
         asciidoctor = create();
+        System.out.println(asciidoctor.asciidoctorVersion());
     }
     
     @Override

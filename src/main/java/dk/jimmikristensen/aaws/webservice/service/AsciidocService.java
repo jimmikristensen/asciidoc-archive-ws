@@ -46,7 +46,10 @@ public interface AsciidocService {
     @Path("/asciidoc/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listAsciidocs(
-            @DefaultValue("") @QueryParam("apikey") String apikey);
+            @DefaultValue("") @QueryParam("apikey") String apikey,
+            @DefaultValue("0") @QueryParam("offset") int offset,
+            @DefaultValue("0") @QueryParam("limit") int limit,
+            @QueryParam("catrgory") final List<String> categories);
     
     @GET
     @Path("/asciidoc/{title}")
