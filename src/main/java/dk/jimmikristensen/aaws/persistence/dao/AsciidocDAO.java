@@ -24,4 +24,6 @@ public interface AsciidocDAO {
     public AsciidocEntity getDocumentByTitle(String title);
     
     public List<AsciidocEntity> getDocumentList(int offset, int limit, List<String> categories);
+    
+    public AsciidocEntity getMetadata(String docTitle);
 }

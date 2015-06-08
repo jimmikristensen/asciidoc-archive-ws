@@ -52,6 +52,13 @@ public interface AsciidocService {
             @QueryParam("catrgory") final List<String> categories);
     
     @GET
+    @Path("/asciidoc/{title}/metadata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAsciidocsMetadata(
+            @DefaultValue("") @QueryParam("apikey") String apikey, 
+            @PathParam("title") String title);
+    
+    @GET
     @Path("/asciidoc/{title}")
     @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
     public Response getAsciidoc(

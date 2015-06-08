@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.NamingException;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -36,7 +38,7 @@ import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 import dk.jimmikristensen.aaws.persistence.database.JndiDataSourceFactory;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocCatrgory;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocList;
-import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocProperties;
+import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocMetadata;
 import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
 import dk.jimmikristensen.aaws.webservice.exception.GeneralException;
 
@@ -214,7 +216,7 @@ public class AsciidocServiceImpl implements AsciidocService {
             AsciidocList list = new AsciidocList();
             
             for (AsciidocEntity entity : entities) {
-                AsciidocProperties props = new AsciidocProperties();
+                AsciidocMetadata props = new AsciidocMetadata();
                 props.setId(entity.getId());
                 props.setTitle(entity.getTitle());
                 props.setOwner(entity.getOwner());
@@ -234,6 +236,33 @@ public class AsciidocServiceImpl implements AsciidocService {
             }
 
             return Response.ok(list).build();
+            
+        } else {
+            throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
+        }
+    }
+    
+    @Override
+    public Response getAsciidocsMetadata(String apikey, String docTitle) {
+        int apikeyId = getAsciiKeyID(apikey);
+        if (apikeyId > 0) {
+            AsciidocEntity entity = dao.getMetadata(docTitle);
+            AsciidocMetadata response = new AsciidocMetadata();
+            response.setCreationDate(entity.getCreationDate());
+            response.setId(entity.getId());
+            response.setOwner(entity.getOwner());
+            response.setTitle(entity.getTitle());
+            
+            List<AsciidocCatrgory> categories = new ArrayList<>();
+            if (entity.getCategoryEntities() != null && entity.getCategoryEntities().size() > 0) {
+                for (CategoryEntity cat : entity.getCategoryEntities()) {
+                    AsciidocCatrgory catResp = new AsciidocCatrgory();
+                    catResp.setName(cat.getName());
+                    categories.add(catResp);
+                }
+            }
+            response.setCategories(categories);
+            return Response.ok(response).build();
             
         } else {
             throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);

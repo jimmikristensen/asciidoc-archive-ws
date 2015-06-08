@@ -375,4 +375,30 @@ class TestAsciidocStorage extends Specification {
         docTitle == null
     }
     
+    @Unroll
+    void "requesting metadata for existing document returns AsciidocMetadata"() {
+        given:
+        DataSourceFactory dsFactory = new FakeDataSourceFactory()
+        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory)
+        DateAdapter adaptor = new DateAdapter()
+        def docTitle = 'Introduction to AsciiDoc'
+        
+        when:
+        def docEntity = asdDAO.getMetadata(docTitle)
+        
+        then:
+        docEntity != null
+        adaptor.marshal(docEntity.getCreationDate()) == '2015-03-31T20:59:59+0200';
+        docEntity.getDoc() == null
+        docEntity.getId() == 1
+        docEntity.getOwner() == 'test@jimmikristensen.dk'
+        docEntity.getTitle() == 'Introduction to AsciiDoc'
+        docEntity.getCategoryEntities().size() == 2
+        docEntity.getCategoryEntities().get(id).getName() == category
+        
+        where:
+        id  | category
+        0   | 'Introduction'
+        1   | 'Asciidoc'
+    }
 }

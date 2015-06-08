@@ -13,7 +13,7 @@ import dk.jimmikristensen.aaws.webservice.dto.response.adaptor.DateAdapter;
 
 @XmlRootElement(name = "asciidoc")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class AsciidocProperties {
+public class AsciidocMetadata {
 
     @XmlElement(name = "id")
     private int id;

@@ -4,7 +4,7 @@ import dk.jimmikristensen.aaws.persistence.database.DataSources;
 import dk.jimmikristensen.aaws.systemtest.doubles.FakeDataSourceMySql;
 import dk.jimmikristensen.aaws.webservice.config.ApplicationConfig;
 import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocList;
-import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocProperties;
+import dk.jimmikristensen.aaws.webservice.dto.response.AsciidocMetadata;
 import dk.jimmikristensen.aaws.webservice.dto.response.adaptor.DateAdapter;
 import dk.jimmikristensen.aaws.webservice.service.AsciidocService;
 import dk.jimmikristensen.aaws.webservice.service.AsciidocServiceImpl;
@@ -225,7 +225,7 @@ public class TestAsciiService extends JerseyTest {
         DateAdapter dateAdaptor = new DateAdapter();
         
         assertEquals(2, docList.getProps().size());
-        AsciidocProperties props = docList.getProps().get(0);
+        AsciidocMetadata props = docList.getProps().get(0);
         assertEquals(1, props.getId());
         assertEquals("test@jimmikristensen.dk", props.getOwner());
         assertEquals("Introduction to AsciiDoc", props.getTitle());

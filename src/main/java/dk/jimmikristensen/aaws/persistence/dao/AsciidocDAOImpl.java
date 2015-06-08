@@ -330,4 +330,31 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         }
         return null;
     }
+
+    @Override
+    public AsciidocEntity getMetadata(String docTitle) {
+        try (Connection conn = ds.getConnection()) { 
+            String qry = "SELECT ad.id, title, owner, creationDate "
+                    + "FROM apikeys AS ak, asciidoc AS ad "
+                    + "WHERE ak.id = ad.apikeys_id "
+                    + "AND title=?;";
+            
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.setString(1, docTitle);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                AsciidocEntity entity = new AsciidocEntity();
+                entity.setCreationDate(resultSet.getTimestamp("creationDate"));
+                entity.setOwner(resultSet.getString("owner"));
+                entity.setCategoryEntities(getCategories(resultSet.getInt("id")));
+                entity.setId(resultSet.getInt("id"));
+                entity.setTitle(resultSet.getString("title"));
+                return entity;
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
 }

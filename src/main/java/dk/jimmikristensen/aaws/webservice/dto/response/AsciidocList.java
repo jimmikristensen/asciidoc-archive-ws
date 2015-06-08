@@ -13,13 +13,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AsciidocList {
 
     @XmlElement(name = "asciidoc")
-    private List<AsciidocProperties> props = new ArrayList<>();
+    private List<AsciidocMetadata> props = new ArrayList<>();
     
-    public List<AsciidocProperties> getProps() {
+    public List<AsciidocMetadata> getProps() {
         return props;
     }
     
-    public void addProp(AsciidocProperties prop) {
+    public void addProp(AsciidocMetadata prop) {
         props.add(prop);
     }
     
