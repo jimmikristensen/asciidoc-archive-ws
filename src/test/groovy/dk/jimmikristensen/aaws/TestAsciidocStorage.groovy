@@ -57,16 +57,16 @@ class TestAsciidocStorage extends Specification {
         status == true;
         
         when:
-        List<AsciidocEntity> docList = asdDAO.getDocumentList()
+        List<AsciidocEntity> docList = asdDAO.getDocumentList(0, 0, new ArrayList<String>())
         
         then:
-        docList.size() == 3;
+        docList.size() == 4;
         
         when:
         AsciidocEntity entity = docList.get(0);
 
         then:
-        3 == entity.getId()
+        4 == entity.getId()
         'Some title' == entity.getTitle();
         'test@jimmikristensen.dk' == entity.getOwner();
         
@@ -270,10 +270,10 @@ class TestAsciidocStorage extends Specification {
         AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory);
         
         when:
-        List<AsciidocEntity> docList = asdDAO.getDocumentList();
+        List<AsciidocEntity> docList = asdDAO.getDocumentList(0, 0, new ArrayList<String>());
         
         then:
-        docList.size() == 2;
+        docList.size() == 3;
         
         when:
         AsciidocEntity entity = docList.get(id);
@@ -287,7 +287,7 @@ class TestAsciidocStorage extends Specification {
         where:
         id  | title                         | owner                     | creationDate
         0   | 'Introduction to AsciiDoc'    | 'test@jimmikristensen.dk' | '2015-03-31T20:59:59+0200'
-        1   | 'Example of AsciiDoc'         | 'test@jimmikristensen.dk' | '2015-03-30T20:25:01+0200'
+        1   | 'Source code listing'         | 'test@jimmikristensen.dk' | '2015-03-30T20:25:01+0200'
         
     }
     

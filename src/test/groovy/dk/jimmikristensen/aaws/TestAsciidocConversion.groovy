@@ -32,7 +32,7 @@ class TestAsciidocConversion extends Specification {
         html.startsWith("<div id=\"preamble\">") == true;
         html.contains("First Section") == true;
         html.contains("Introduction to AsciiDoc") == false;
-        html.length() == 513;
+        html.length() == 525;
     }
     
     void "it converts an asciidoc to HTML and returns it"() {

@@ -224,7 +224,7 @@ public class TestAsciiService extends JerseyTest {
         AsciidocList docList = response.readEntity(AsciidocList.class);
         DateAdapter dateAdaptor = new DateAdapter();
         
-        assertEquals(2, docList.getProps().size());
+        assertEquals(3, docList.getProps().size());
         AsciidocMetadata props = docList.getProps().get(0);
         assertEquals(1, props.getId());
         assertEquals("test@jimmikristensen.dk", props.getOwner());
@@ -233,9 +233,9 @@ public class TestAsciiService extends JerseyTest {
         assertEquals(2, props.getCategories().size());
 
         props = docList.getProps().get(1);
-        assertEquals(2, props.getId());
+        assertEquals(3, props.getId());
         assertEquals("test@jimmikristensen.dk", props.getOwner());
-        assertEquals("Example of AsciiDoc", props.getTitle());
+        assertEquals("Source code listing", props.getTitle());
         assertEquals("2015-03-30T20:25:01+0200", dateAdaptor.marshal(props.getCreationDate()));
         assertEquals(1, props.getCategories().size());
     }
