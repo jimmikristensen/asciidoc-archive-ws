@@ -1,9 +1,11 @@
 package dk.jimmikristensen.aaws.domain.asciidoc;
 
+import static org.asciidoctor.Asciidoctor.Factory.create;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.asciidoctor.Asciidoctor;
-import static org.asciidoctor.Asciidoctor.Factory.create;
 import org.asciidoctor.ast.Author;
 import org.asciidoctor.ast.DocumentHeader;
 import org.asciidoctor.ast.RevisionInfo;
@@ -19,7 +21,6 @@ public class GeneralAsciidocConverter implements AsciidocConverter {
     
     public GeneralAsciidocConverter() {
         asciidoctor = create();
-        System.out.println(asciidoctor.asciidoctorVersion());
     }
     
     @Override

@@ -4,49 +4,39 @@ CREATE TABLE IF NOT EXISTS `apikeys` (
   `apikey` VARCHAR(40) NOT NULL,
   `owner` VARCHAR(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `UNIQUE1` (`apikey` ASC)
-);
+  UNIQUE INDEX `UNIQUE1` (`apikey` ASC));
 
-DROP TABLE IF EXISTS `asciidoc`;
-CREATE TABLE IF NOT EXISTS `asciidoc` (
+DROP TABLE IF EXISTS `asciidocs`;
+CREATE TABLE IF NOT EXISTS `asciidocs` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(200) NOT NULL,
-  `apikeys_id` INT UNSIGNED NULL,
-  `doc` MEDIUMTEXT NOT NULL DEFAULT '',
-  `creationDate` DATETIME NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_asciidoc_apikeys_idx` (`apikeys_id` ASC),
-  UNIQUE INDEX `UNIQUETITLE` (`title` ASC),
-  CONSTRAINT `fk_asciidoc_apikeys`
-    FOREIGN KEY (`apikeys_id`)
-    REFERENCES `apikeys` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION
-);
+  `title` VARCHAR(100) NOT NULL,
+  `filename` VARCHAR(100) NOT NULL,
+  `path` VARCHAR(255) NOT NULL,
+  `sha` VARCHAR(40) NOT NULL,
+  `created` DATETIME NOT NULL,
+  `url` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`, `title`),
+  UNIQUE INDEX `UNIQUE2` (`path` ASC));
 
-DROP TABLE IF EXISTS `translation`;
-CREATE TABLE IF NOT EXISTS `translation` (
+DROP TABLE IF EXISTS `categories`;
+CREATE TABLE IF NOT EXISTS `categories` (
+  `asciidocId` INT UNSIGNED NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`asciidocId`),
+  CONSTRAINT `fk_categories_asciidocs1`
+    FOREIGN KEY (`asciidocId`)
+    REFERENCES `asciidocs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+DROP TABLE IF EXISTS `contents`;
+CREATE TABLE IF NOT EXISTS `contents` (
+  `asciidocId` INT UNSIGNED NOT NULL,
   `type` VARCHAR(20) NOT NULL,
-  `asciidoc_id` INT UNSIGNED NOT NULL,
-  `doc` MEDIUMTEXT NOT NULL DEFAULT '',
-  PRIMARY KEY (`type`, `asciidoc_id`),
-  INDEX `fk_translation_asciidoc1_idx` (`asciidoc_id` ASC),
-  CONSTRAINT `fk_translation_asciidoc1`
-    FOREIGN KEY (`asciidoc_id`)
-    REFERENCES `asciidoc` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-);
-
-DROP TABLE IF EXISTS `category`;
-CREATE TABLE IF NOT EXISTS `category` (
-  `name` VARCHAR(50) NOT NULL,
-  `asciidoc_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`name`, `asciidoc_id`),
-  INDEX `fk_category_asciidoc1_idx` (`asciidoc_id` ASC),
-  CONSTRAINT `fk_category_asciidoc1`
-    FOREIGN KEY (`asciidoc_id`)
-    REFERENCES `asciidoc` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-);
+  `doc` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`asciidocId`, `type`),
+  CONSTRAINT `fk_translation_asciidocs1`
+    FOREIGN KEY (`asciidocId`)
+    REFERENCES `asciidocs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);

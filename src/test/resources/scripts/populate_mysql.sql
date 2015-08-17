@@ -1,7 +1,38 @@
-INSERT INTO apikeys (apikey, owner) VALUES ('913a73b565c8e2c8ed94497580f619397709b8b6', 'test@jimmikristensen.dk');
+INSERT INTO apikeys (apikey, owner) VALUES ('913a73b565c8e2c8ed94497580f619397709b8b6', 'test@somewhere.org');
 
-INSERT INTO asciidoc (title, apikeys_id, creationDate, doc) VALUES ('Introduction to AsciiDoc', 1, '2015-03-31 20:59:59', '= Introduction to AsciiDoc
-Doc Writer <doc@example.com>
+INSERT INTO asciidocs (title, filename, path, sha, created, url) 
+VALUES (
+'Asciidoc Test 1',
+'asciidoc-testcase55.adoc', 
+'test1/asciidoc-testcase55.adoc', 
+'d40c3e54df31c876d426a507f6dec644cb895d4f', 
+'2015-04-01 10:00:00', 
+'');
+
+INSERT INTO asciidocs (title, filename, path, sha, created, url) 
+VALUES (
+'Asciidoc Test 2',
+'asciidoc-testcase16.adoc', 
+'test1/asciidoc-testcase16.adoc', 
+'5702e000b4419a4d5162655775d438fa14b4d747', 
+'2015-04-02 10:00:00', 
+'');
+
+INSERT INTO asciidocs (title, filename, path, sha, created, url) 
+VALUES (
+'Asciidoc Test 3',
+'asciidoc-testcase1.adoc', 
+'test1/asciidoc-testcase17.adoc', 
+'7acb36108793faf9ea201e1ad46e58280f75b5a1', 
+'2015-04-03 10:00:00', 
+'');
+
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+1, 
+'adoc', 
+'= Another Introduction to AsciiDocc
+Doc Writer <doc@example.dk>
 
 A preface about http://asciidoc.org[AsciiDoc].
 
@@ -11,22 +42,43 @@ A preface about http://asciidoc.org[AsciiDoc].
 * item 2
 
 [source,ruby]
-puts "Hello, World!"');
+puts "Hello, World!"'
+);
 
-INSERT INTO asciidoc (title, apikeys_id, creationDate, doc) VALUES ('Example of AsciiDoc', 1, '2015-03-30 20:25:01', '= Example of AsciiDoc
-Doc Writer <doc@example.com>
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+2, 
+'adoc', 
+'= The Brothers Karamazov2
+:author: Fyodor Dostoyevsky
+:encoding: iso-8859-1
+:plaintext:
 
-A preface about http://asciidoc.org[AsciiDoc].
+..........................................................................
+Translated from the Russian of Fyodor Dostoyevsky by Constance Garnett
+The Lowell Press New York
 
-== First Section
+ :
+ :
 
-* item 1
-* item 2
+***START OF THE PROJECT GUTENBERG EBOOK THE BROTHERS KARAMAZOV***
+..........................................................................
 
-[source,java]
-puts "Hello, World!"');
 
-INSERT INTO asciidoc (title, apikeys_id, creationDate, doc) VALUES ('Source code listing', 1, '2015-03-30 20:25:01', '= Source code listing
+= PART I
+
+== The History Of A Family
+
+=== Fyodor Pavlovitch Karamazov
+
+Alexey Fyodorovitch Karamazov was the third son of Fyodor Pavlovitch'
+);
+
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+3, 
+'adoc', 
+'= Source code listing
  
 Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.
  
@@ -44,57 +96,30 @@ CREATE TABLE USER (
 ID INT NOT NULL,
 USERNAME VARCHAR(40) NOT NULL
 );
-----');
+----'
+);
+    
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+1, 
+'html', 
+'<h1>Another Introduction to AsciiDocc</h1>'
+);
 
-INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 1, '<div id="preamble">
-    <div class="sectionbody">
-    <div class="paragraph">
-    <p>A preface about <a href="http://asciidoc.org">AsciiDoc</a>.</p>
-    </div>
-    </div>
-    </div>
-    <div class="sect1">
-    <h2 id="_first_section">First Section</h2>
-    <div class="sectionbody">
-    <div class="ulist">
-    <ul>
-    <li>
-    <p>item 1</p>
-    </li>
-    <li>
-    <p>item 2</p>
-    </li>
-    </ul>
-    </div>
-    <div class="listingblock">
-    <div class="content">
-    <pre class="highlight"><code class="language-ruby" data-lang="ruby">puts "Hello, World!"</code></pre>
-    </div>
-    </div>
-    </div>
-    </div>');
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+2, 
+'html', 
+'<h1>The History Of A Family</h1>'
+);
+
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+3, 
+'html', 
+'<h1>Source code listing</h1>'
+);
     
-INSERT INTO translation (`type`, asciidoc_id, doc) VALUES ('html5', 3, '<div class="paragraph">
-<p>Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-groovy" data-lang="groovy">// File: User.groovy
-class User {
-String username
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sql" data-lang="sql">CREATE TABLE USER (
-ID INT NOT NULL,
-USERNAME VARCHAR(40) NOT NULL
-);</code></pre>
-</div>
-</div>');
-    
-INSERT INTO category (name, asciidoc_id) VALUES ('Introduction', 1);
-INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 1);
-INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 2);
-INSERT INTO category (name, asciidoc_id) VALUES ('Asciidoc', 3);
+INSERT INTO categories (asciidocId, name) VALUES (1, 'test1');
+INSERT INTO categories (asciidocId, name) VALUES (2, 'test1');
+INSERT INTO categories (asciidocId, name) VALUES (3, 'test1');

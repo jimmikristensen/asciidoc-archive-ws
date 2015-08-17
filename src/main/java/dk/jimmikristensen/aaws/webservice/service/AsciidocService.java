@@ -23,47 +23,28 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Path("/")
 public interface AsciidocService {
     
-    @POST
-    @Path("/asciidoc")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response uploadFile(
-            @DefaultValue("") @QueryParam("apikey") String apikey,
-            @QueryParam("catrgory") final List<String> categories,
-            @FormDataParam("file") InputStream stream, 
-            @FormDataParam("file") FormDataContentDisposition fileInfo);
+//    @GET
+//    @Path("/asciidoc/list")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response listAsciidocs(
+//            @DefaultValue("") @QueryParam("apikey") String apikey,
+//            @DefaultValue("0") @QueryParam("offset") int offset,
+//            @DefaultValue("0") @QueryParam("limit") int limit,
+//            @QueryParam("catrgory") final List<String> categories);
     
-    @PUT
-    @Path("/asciidoc/{title}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response updateFile(
-            @DefaultValue("") @QueryParam("apikey") String apikey,
-            @QueryParam("catrgory") final List<String> categories,
-            @PathParam("title") String title,
-            @FormDataParam("file") InputStream stream,
-            @FormDataParam("file") FormDataContentDisposition fileInfo);
+//    @GET
+//    @Path("/asciidoc/{title}/metadata")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getAsciidocsMetadata(
+//            @DefaultValue("") @QueryParam("apikey") String apikey, 
+//            @PathParam("title") String title);
     
-    @GET
-    @Path("/asciidoc/list")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response listAsciidocs(
-            @DefaultValue("") @QueryParam("apikey") String apikey,
-            @DefaultValue("0") @QueryParam("offset") int offset,
-            @DefaultValue("0") @QueryParam("limit") int limit,
-            @QueryParam("catrgory") final List<String> categories);
-    
-    @GET
-    @Path("/asciidoc/{title}/metadata")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAsciidocsMetadata(
-            @DefaultValue("") @QueryParam("apikey") String apikey, 
-            @PathParam("title") String title);
-    
-    @GET
-    @Path("/asciidoc/{title}")
-    @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
-    public Response getAsciidoc(
-            @DefaultValue("false") @QueryParam("download") boolean download,
-            @DefaultValue("") @QueryParam("apikey") String apikey,
-            @PathParam("title") String title,
-            @HeaderParam("Accept") String header);
+//    @GET
+//    @Path("/asciidoc/{title}")
+//    @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
+//    public Response getAsciidoc(
+//            @DefaultValue("false") @QueryParam("download") boolean download,
+//            @DefaultValue("") @QueryParam("apikey") String apikey,
+//            @PathParam("title") String title,
+//            @HeaderParam("Accept") String header);
 }

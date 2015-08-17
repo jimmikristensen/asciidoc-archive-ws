@@ -1,5 +1,6 @@
 package dk.jimmikristensen.aaws.persistence.dao.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -7,102 +8,74 @@ public class AsciidocEntity {
     
     private int id;
     private String title;
-    private int apikeyId;
-    private String doc;
-    private String owner;
-    private Date creationDate;
-    private List<CategoryEntity> categoryEntities;
-
-    public List<CategoryEntity> getCategoryEntities() {
-        return categoryEntities;
-    }
-
-    public void setCategoryEntities(List<CategoryEntity> categoryEntities) {
-        this.categoryEntities = categoryEntities;
-    }
-
-    /**
-     * @return the id
-     */
+    private String filename;
+    private String path;
+    private String sha;
+    private String url;
+    private Date date;
+    private List<ContentsEntity> contents = new ArrayList<>();
+    private List<CategoryEntity> categories = new ArrayList<>();
+    
     public int getId() {
         return id;
     }
-
-    /**
-     * @param id the id to set
-     */
     public void setId(int id) {
         this.id = id;
     }
-
-    /**
-     * @return the apikeyId
-     */
-    public int getApikeyId() {
-        return apikeyId;
-    }
-
-    /**
-     * @param apikeyId the apikeyId to set
-     */
-    public void setApikeyId(int apikeyId) {
-        this.apikeyId = apikeyId;
-    }
-
-    /**
-     * @return the doc
-     */
-    public String getDoc() {
-        return doc;
-    }
-
-    /**
-     * @param doc the doc to set
-     */
-    public void setDoc(String doc) {
-        this.doc = doc;
-    }
-
-    /**
-     * @return the owner
-     */
-    public String getOwner() {
-        return owner;
-    }
-
-    /**
-     * @param owner the owner to set
-     */
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    /**
-     * @return the title
-     */
     public String getTitle() {
         return title;
     }
-
-    /**
-     * @param title the title to set
-     */
     public void setTitle(String title) {
         this.title = title;
     }
-
-    /**
-     * @return the creationDate
-     */
-    public Date getCreationDate() {
-        return creationDate;
+    public String getFilename() {
+        return filename;
     }
-
-    /**
-     * @param creationDate the creationDate to set
-     */
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+    public String getPath() {
+        return path;
+    }
+    public void setPath(String path) {
+        this.path = path;
+    }
+    public String getSha() {
+        return sha;
+    }
+    public void setSha(String sha) {
+        this.sha = sha;
+    }
+    public String getUrl() {
+        return url;
+    }
+    public void setUrl(String url) {
+        this.url = url;
+    }
+    public Date getDate() {
+        return date;
+    }
+    public void setDate(Date date) {
+        this.date = date;
+    }
+    public void addContent(ContentsEntity c) {
+        contents.add(c);
+    }
+    public List<ContentsEntity> getContents() {
+        return contents;
+    }
+    public void addcategory(CategoryEntity c) {
+        categories.add(c);
+    }
+    public List<CategoryEntity> getCategories() {
+        return categories;
+    }
+    public void setCategories(List<CategoryEntity> categories) {
+        this.categories = categories;
     }
     
+    @Override
+    public String toString() {
+        return "filename: "+filename+", path: "+path+", sha: "+sha+", url: "+url+", date: "+date;
+    }
 }

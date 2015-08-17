@@ -3,19 +3,9 @@
 package dk.jimmikristensen.aaws
 
 import static org.junit.Assert.*
-
-import org.asciidoctor.ast.ContentPart
-
 import spock.lang.Specification
-import dk.jimmikristensen.aaws.domain.AsciidocHandler
-import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocBackend
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
-import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
-import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
-import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
-import dk.jimmikristensen.aaws.persistence.dao.entity.TranslationEntity
-import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
 
 class TestAsciidocConversion extends Specification {
 
@@ -33,32 +23,6 @@ class TestAsciidocConversion extends Specification {
         html.contains("First Section") == true;
         html.contains("Introduction to AsciiDoc") == false;
         html.length() == 525;
-    }
-    
-    void "it converts an asciidoc to HTML and returns it"() {
-        given:
-        DataSourceFactory dsFactory = new FakeDataSourceFactory()
-        AsciidocDAO asdDAO = new AsciidocDAOImpl(dsFactory)
-        AsciidocHandler handler = new AsciidocHandler(new HtmlAsciidocConverter(), asdDAO)
-        def apiKeyId = 1
-        
-        when:
-        def title = handler.storeAsciidoc(apiKeyId, getTestCase("asciidoc-testcase2.adoc"))
-        
-        then:
-        title == 'Sample Document'
-        
-        when:
-        def id = 1
-        def type = AsciidocBackend.HTML5.toString()
-        TranslationEntity entity = asdDAO.getTranslation(3, type)
-        
-        then:
-        entity != null
-        entity.getDoc() != ''
-        entity.getDoc().startsWith('<div class="paragraph">')
-        entity.getDoc().endsWith('</div>')
-        
     }
     
     void "get meta data from document"() {
@@ -101,33 +65,7 @@ class TestAsciidocConversion extends Specification {
         null != converter.getDocHeader();
         null == converter.getDocHeader().getDocumentTitle();
     }
-    
-    void "sdfsf"() {
-        given:
-        AsciidocConverter converter = new HtmlAsciidocConverter()
         
-        when:
-        converter.loadString(getTestCase("asciidoc-testcase7.adoc"))
-        def doc = converter.getDocument()
-        def html = converter.convert()
-
-        println html
-        
-        println '----------------'
-        
-        for (ContentPart part : doc.getParts()){
-            println '########################'
-            System.out.println(part.getTitle());
-            System.out.println(part.getContent());
-
-          }
-        
-//        String html = converter.convert()
-        
-        then:
-        println ''
-    }
-    
     private String getTestCase(String fileName) {
         InputStream is = getClass().getResourceAsStream("/"+fileName);
 

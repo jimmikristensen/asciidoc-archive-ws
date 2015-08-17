@@ -25,7 +25,6 @@ public class FakeDataSourceMySql implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {
-    
         return connectionPool.getConnection();
     }
 
