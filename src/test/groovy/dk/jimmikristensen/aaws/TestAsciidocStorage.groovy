@@ -2,17 +2,18 @@ package dk.jimmikristensen.aaws
 
 import static org.junit.Assert.*
 import spock.lang.Specification
+import dk.jimmikristensen.aaws.domain.encryption.SHA1
 
 class TestAsciidocStorage extends Specification {
     
-//    void "is able to convert plaintext to SHA1 ciphertext"() {
-//        given:
-//        String ciphertext = SHA1.encrypt("This is a test to check if SHA1 works");
-//        
-//        expect:
-//        ciphertext.length() == 40;
-//        ciphertext == "e39454df9247edb7e397a22a794b86a136a0ac8d";
-//    }
+    void "is able to convert plaintext to SHA1 ciphertext"() {
+        given:
+        String ciphertext = SHA1.encrypt("This is a test to check if SHA1 works");
+        
+        expect:
+        ciphertext.length() == 40;
+        ciphertext == "e39454df9247edb7e397a22a794b86a136a0ac8d";
+    }
 //    
 //    void "adding asciidoc with categories"() {
 //        setup:

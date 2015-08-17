@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.json.simple.parser.ParseException;
 
+import dk.jimmikristensen.aaws.config.Configuration;
 import dk.jimmikristensen.aaws.domain.github.GithubScanner;
 import dk.jimmikristensen.aaws.domain.github.dto.CommitFile;
 import dk.jimmikristensen.aaws.domain.github.dto.RepoFile;
@@ -14,8 +15,8 @@ import dk.jimmikristensen.aaws.domain.github.exception.GithubLimitReachedExcepti
 
 public class GithubTest {
     
-    private static String repoOwner = "jimmikristensen";
-    private static String repoName = "TDD";
+    private static String repoOwner = Configuration.getCriticalProperty("github.repo_owner");
+    private static String repoName = Configuration.getCriticalProperty("github.repo_name");
 
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException, GithubLimitReachedException, GithubHttpErrorException {
         fetchAll();

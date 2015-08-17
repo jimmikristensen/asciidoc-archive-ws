@@ -34,7 +34,7 @@ public class AsciidocImporter {
         this.dao = dao;
         this.converter = converter;
     }
-    
+        
     public List<AsciidocEntity> initialImport(String owner, String repo) throws ImporterException {
         List<AsciidocEntity> adocEntities = new ArrayList<AsciidocEntity>();
         try {
@@ -43,8 +43,6 @@ public class AsciidocImporter {
                 String adocText = scanner.readResource(file.getUrl());
                 converter.loadString(adocText);
                 String html = converter.convert();
-                System.out.println(adocText);
-                System.out.println(html);
                 
                 // add asciidoc data
                 AsciidocEntity entity = new AsciidocEntity();
