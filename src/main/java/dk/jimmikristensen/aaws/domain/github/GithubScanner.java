@@ -67,6 +67,7 @@ public class GithubScanner implements RepoScanner {
         dateAdapter = new DateAdapter();
     }
 
+    @Override
     public List<CommitFile> scanCommits(String owner, String repo, Date date) throws IOException, ParseException, java.text.ParseException, ClassCastException, GithubLimitReachedException, GithubHttpErrorException {
         String url = GH_API_URL + "/repos/"+owner+"/"+repo+"/commits";
         
@@ -111,7 +112,7 @@ public class GithubScanner implements RepoScanner {
         try {
             commitDate = dateAdapter.unmarshal(committerDate);
         } catch (java.text.ParseException e) {
-            e.printStackTrace();
+            log.error("Error parsing date", e);
         }
 
         // find the files that was committed
@@ -129,7 +130,7 @@ public class GithubScanner implements RepoScanner {
             String previousName = "";
             if (status.equals("renamed")) {
                 previousName = (String) file.get("previous_filename");
-                previousName = previousName.substring(previousName.lastIndexOf("/") + 1);
+//                previousName = previousName.substring(previousName.lastIndexOf("/") + 1);
             }
 
             if (name != null) {
@@ -144,9 +145,9 @@ public class GithubScanner implements RepoScanner {
                         commit.setUrl(downloadUrl);
                         commit.setType(extension);
                         commit.setDate(commitDate);
-                        commit.setStatus(status);
+                        commit.setStatus(CommitStatus.fromString(status));
                         commit.setCommitter(committerName);
-                        commit.setPreviousFilename(previousName);
+                        commit.setPreviousPath(previousName);
                         
                         commitResources.add(commit);
                     }

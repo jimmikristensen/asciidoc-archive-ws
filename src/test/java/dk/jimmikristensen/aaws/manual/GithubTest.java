@@ -19,10 +19,10 @@ public class GithubTest {
     private static String repoName = Configuration.getCriticalProperty("github.repo_name");
 
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException, GithubLimitReachedException, GithubHttpErrorException {
-        fetchAll();
+//        fetchAll();
         fetchCommits();
-        downloadResource();
-        readFile();
+//        downloadResource();
+//        readFile();
     }
     
     public static void readFile() throws IOException, GithubLimitReachedException, GithubHttpErrorException {
@@ -51,7 +51,7 @@ public class GithubTest {
                 System.out.println("Type: "+commit.getType());
                 System.out.println("Date: "+commit.getDate());
                 System.out.println("Committer: "+commit.getCommitter());
-                System.out.println("PreviousFilename: "+commit.getPreviousFilename());
+                System.out.println("PreviousFilename: "+commit.getPreviousPath());
                 System.out.println("Status: "+commit.getStatus());
                 System.out.println("-------------------------------------");
             }

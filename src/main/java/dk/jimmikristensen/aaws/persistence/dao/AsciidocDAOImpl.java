@@ -351,4 +351,11 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         
         return docs;
     }
+
+    @Override
+    public boolean update(AsciidocEntity entity, String uniquePath)
+            throws SQLException {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

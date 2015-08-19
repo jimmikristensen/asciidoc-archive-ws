@@ -14,6 +14,8 @@ public interface AsciidocDAO {
     
     public boolean save(List<AsciidocEntity> entity) throws SQLException;
     
+    public boolean update(AsciidocEntity entity, String uniquePath) throws SQLException;
+    
 //    public boolean saveAsciidoc(AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException;
 //    
 //    public boolean saveAsciidoc(String title, AsciidocEntity aEntity, TranslationEntity tEntity) throws SQLException;

@@ -1,10 +1,12 @@
 package dk.jimmikristensen.aaws.domain.github.dto;
 
+import dk.jimmikristensen.aaws.domain.github.CommitStatus;
+
 public class CommitFile extends RepoFile {
 
     private String committer;
-    private String status;
-    private String previousFilename;
+    private CommitStatus status;
+    private String previousPath;
     
     public String getCommitter() {
         return committer;
@@ -12,17 +14,17 @@ public class CommitFile extends RepoFile {
     public void setCommitter(String committer) {
         this.committer = committer;
     }
-    public String getStatus() {
+    public CommitStatus getStatus() {
         return status;
     }
-    public void setStatus(String status) {
+    public void setStatus(CommitStatus status) {
         this.status = status;
     }
-    public String getPreviousFilename() {
-        return previousFilename;
+    public String getPreviousPath() {
+        return previousPath;
     }
-    public void setPreviousFilename(String previousFilename) {
-        this.previousFilename = previousFilename;
+    public void setPreviousPath(String previousFilename) {
+        this.previousPath = previousFilename;
     }
     
     

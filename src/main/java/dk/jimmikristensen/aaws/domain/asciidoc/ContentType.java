@@ -15,7 +15,7 @@ public enum ContentType {
 
     public static ContentType fromString(String value) {
         for (ContentType os : ContentType.values()) {
-            if (os.getType() == value) {
+            if (os.getType().equalsIgnoreCase(value)) {
                 return os;
             }
         }
