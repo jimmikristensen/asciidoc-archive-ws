@@ -228,16 +228,20 @@ public class GithubScanner implements RepoScanner {
         return output.toString();
     }
     
-    public String downloadResource(String url) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
+    public String downloadResource(String url, String savePath) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
         String filename = "unknownfile_"+System.currentTimeMillis();
         if (!url.endsWith("/")) {
             filename = url.substring(url.lastIndexOf("/") + 1);
+        }
+        
+        if (!savePath.equals("") && savePath != null && !savePath.endsWith("/")) {
+            savePath+="/";
         }
 
         // url decode the filename in case of spaces and other encoded chars
         filename = URLDecoder.decode(filename, "UTF-8");
         
-        String path = Configuration.getProperty("github.file_download_path", "");
+        String path = Configuration.getProperty("github.file_download_path", "")+savePath;
 
         Response resp = callGithub(url, null);
         
@@ -252,6 +256,7 @@ public class GithubScanner implements RepoScanner {
         BufferedInputStream input = new BufferedInputStream(is);
         OutputStream output = new FileOutputStream(
                 Configuration.getProperty("github.file_download_path", "")
+                +savePath
                 +filename);
         
         byte[] data = new byte[1024];

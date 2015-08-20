@@ -20,8 +20,8 @@ public class GithubTest {
 
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException, GithubLimitReachedException, GithubHttpErrorException {
 //        fetchAll();
-        fetchCommits();
-//        downloadResource();
+//        fetchCommits();
+        downloadResource();
 //        readFile();
     }
     
@@ -32,7 +32,8 @@ public class GithubTest {
     
     public static void downloadResource() throws IOException, GithubLimitReachedException, GithubHttpErrorException {
         GithubScanner gh = new GithubScanner();
-        gh.downloadResource("https://raw.githubusercontent.com/jimmikristensen/TDD/3459a51c4951ba3a55d7debf25488ad174b1aaeb/fakeobject%20two.png");
+        gh.downloadResource("https://raw.githubusercontent.com/jimmikristensen/TDD/3459a51c4951ba3a55d7debf25488ad174b1aaeb/fakeobject%20two.png", "");
+        gh.downloadResource("https://raw.githubusercontent.com/jimmikristensen/TDD/master/test%20one/ReliabilityGraph.png", "test/");
     }
     
     public static void fetchCommits() throws IOException, ParseException, java.text.ParseException, GithubLimitReachedException, GithubHttpErrorException {

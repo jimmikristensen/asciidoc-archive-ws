@@ -131,44 +131,41 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 //    }
     
 
-//    @Override
-//    public List<AsciidocEntity> getDocumentList(int offset, int limit, List<String> categories) {
-//        List<AsciidocEntity> entities = new ArrayList<>();
-//        int qryLimit = 100;
-//        if (limit > 0) {
-//            qryLimit = limit;
-//        }
-//        
-//        String qryOffset = "";
-//        if (offset > 0) {
-//            qryOffset = "OFFSET "+offset;
-//        }
-//        
-//        try (Connection conn = ds.getConnection()) {  
-//            String qry = "SELECT ad.id, title, owner, creationDate "
-//                       + "FROM apikeys AS ak, asciidoc AS ad "
-//                       + "WHERE ak.id = ad.apikeys_id "
-//                       + "ORDER BY creationDate DESC "
-//                       + "LIMIT "+qryLimit+" "+qryOffset+";";
-//            
-//            PreparedStatement statement = conn.prepareStatement(qry);
-//            ResultSet rs = statement.executeQuery();
-//            while (rs.next()) {
-//                AsciidocEntity entity = new AsciidocEntity();
-//                entity.setId(rs.getInt("id"));
-//                entity.setTitle(rs.getString("title"));
-//                entity.setOwner(rs.getString("owner"));
-//                entity.setCreationDate(rs.getTimestamp("creationDate"));
-//                entity.setCategoryEntities(getCategories(rs.getInt("id")));
-//                entities.add(entity);
-//            }
-//            
-//        } catch (SQLException ex) {
-//            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        
-//        return entities;
-//    }
+    @Override
+    public List<AsciidocEntity> getDocumentList(int offset, int limit, List<String> categories) {
+        List<AsciidocEntity> entities = new ArrayList<>();
+        int qryLimit = 1000;
+        if (limit > 0) {
+            qryLimit = limit;
+        }
+        
+        String qryOffset = "";
+        if (offset > 0) {
+            qryOffset = "OFFSET "+offset;
+        }
+        
+        try (Connection conn = ds.getConnection()) {  
+            String qry = "SELECT id, title, created "
+                       + "FROM asciidocs "
+                       + "ORDER BY created DESC "
+                       + "LIMIT "+qryLimit+" "+qryOffset+";";
+            
+            PreparedStatement statement = conn.prepareStatement(qry);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                AsciidocEntity entity = new AsciidocEntity();
+                entity.setId(rs.getInt("id"));
+                entity.setTitle(rs.getString("title"));
+                entity.setDate(rs.getTimestamp("created"));
+                entities.add(entity);
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return entities;
+    }
 
     private List<CategoryEntity> getCategories(int asciidocId) {
         List<CategoryEntity> cList = new ArrayList<>();

@@ -19,5 +19,5 @@ public interface RepoScanner {
     
     public String readResource(String url) throws IOException, GithubLimitReachedException, GithubHttpErrorException;
     
-    public String downloadResource(String url) throws IOException, GithubLimitReachedException, GithubHttpErrorException;
+    public String downloadResource(String url, String savePath) throws IOException, GithubLimitReachedException, GithubHttpErrorException;
 }

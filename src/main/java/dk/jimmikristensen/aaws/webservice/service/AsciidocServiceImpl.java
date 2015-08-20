@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,8 +17,11 @@ import javax.ws.rs.core.Response;
 import dk.jimmikristensen.aaws.domain.encryption.SHA1;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl;
+import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 import dk.jimmikristensen.aaws.persistence.database.JndiDataSourceFactory;
+import dk.jimmikristensen.aaws.webservice.dto.response.Asciidoc;
+import dk.jimmikristensen.aaws.webservice.dto.response.Asciidocs;
 import dk.jimmikristensen.aaws.webservice.error.ErrorCode;
 import dk.jimmikristensen.aaws.webservice.exception.GeneralException;
 
@@ -185,10 +190,31 @@ public class AsciidocServiceImpl implements AsciidocService {
 //        }
 //    }
     
-//    @Override
-//    public Response listAsciidocs(String apikey, int offset, int limit, List<String> categories) {
-//        int apikeyId = getAsciiKeyID(apikey);
-//        
+    @Override
+    public Response listAsciidocs(String apikey, int offset, int limit, List<String> categories) {
+        int apikeyId = getAsciiKeyID(apikey);
+        
+        if (apikeyId > 0) {
+            List<AsciidocEntity> entities = dao.getDocumentList(offset, limit, categories);
+            List<Asciidoc> asciidocs = new ArrayList<Asciidoc>();
+                
+            for (AsciidocEntity entity : entities) {
+                Asciidoc doc = new Asciidoc();
+                doc.setId(entity.getId());
+                doc.setTitle(entity.getTitle());
+                doc.setDate(entity.getDate());
+                asciidocs.add(doc);
+            }
+                
+            Asciidocs docs = new Asciidocs();
+            docs.setAsciidocs(asciidocs);
+                
+            return Response.ok(docs).build();
+        } else {
+            throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
+        }
+        
+        
 //        if (apikeyId > 0) {
 //            List<AsciidocEntity> entities = dao.getDocumentList(offset, limit, categories);
 //            AsciidocList list = new AsciidocList();
@@ -218,7 +244,7 @@ public class AsciidocServiceImpl implements AsciidocService {
 //        } else {
 //            throw new GeneralException("Invalid api key", ErrorCode.INVALID_API_KEY, Response.Status.FORBIDDEN);
 //        }
-//    }
+    }
     
 //    @Override
 //    public Response getAsciidocsMetadata(String apikey, String docTitle) {

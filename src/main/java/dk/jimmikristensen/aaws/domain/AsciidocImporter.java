@@ -48,42 +48,21 @@ public class AsciidocImporter {
         try {
             List<CommitFile> commitList = scanner.scanCommits(owner, repo, fromDate);
             for (CommitFile file : commitList) {
-                String adocText = scanner.readResource(file.getUrl());
-                converter.loadString(adocText);
-                String html = converter.convert();
                 
-                // add asciidoc data
-                AsciidocEntity entity = new AsciidocEntity();
-                entity.setTitle(converter.getMainTitle());
-                entity.setFilename(file.getFilename());
-                entity.setPath(file.getPath());
-                entity.setSha(file.getSha());
-                entity.setUrl(file.getUrl());
-                entity.setDate(file.getDate());
-                
-                // add the asciidoc contents
-                ContentsEntity adocContentsEntity = new ContentsEntity();
-                adocContentsEntity.setType(ContentType.ASCIIDOC);
-                adocContentsEntity.setDocument(adocText);
-                entity.addContent(adocContentsEntity);
-                
-                // ass the html contents
-                ContentsEntity htmlContentsEntity = new ContentsEntity();
-                htmlContentsEntity.setType(ContentType.HTML);
-                htmlContentsEntity.setDocument(html);
-                entity.addContent(htmlContentsEntity);
-                
-                // add the categories
-                entity.setCategories(parseCategories(file.getPath()));
-                
-                adocEntities.add(entity);
-                                
-                if (file.getStatus() == CommitStatus.MODIFIED) {
-                    dao.update(entity, file.getPath());
-                } else if (file.getStatus() == CommitStatus.RENAMED) {
-                    dao.update(entity, file.getPreviousPath());
-                } else if (file.getStatus() == CommitStatus.ADDED) {
-                    adocEntitySaveList.add(entity);
+                if (file.getType().equals(".adoc")) {
+                    AsciidocEntity entity = populateAsciidocEntity(file);
+                    adocEntities.add(entity);
+                                    
+                    if (file.getStatus() == CommitStatus.MODIFIED) {
+                        dao.update(entity, file.getPath());
+                    } else if (file.getStatus() == CommitStatus.RENAMED) {
+                        dao.update(entity, file.getPreviousPath());
+                    } else if (file.getStatus() == CommitStatus.ADDED) {
+                        adocEntitySaveList.add(entity);
+                    }
+                    
+                } else {
+                    initiateDownload(file);
                 }
             }
             
@@ -119,39 +98,16 @@ public class AsciidocImporter {
         try {
             List<RepoFile> fileList = scanner.scanRepository(owner, repo);
             for (RepoFile file : fileList) {
-                String adocText = scanner.readResource(file.getUrl());
-                converter.loadString(adocText);
-                String html = converter.convert();
-                
-                // add asciidoc data
-                AsciidocEntity entity = new AsciidocEntity();
-                entity.setTitle(converter.getMainTitle());
-                entity.setFilename(file.getFilename());
-                entity.setPath(file.getPath());
-                entity.setSha(file.getSha());
-                entity.setUrl(file.getUrl());
-                entity.setDate(file.getDate());
-                
-                // add the asciidoc contents
-                ContentsEntity adocContentsEntity = new ContentsEntity();
-                adocContentsEntity.setType(ContentType.ASCIIDOC);
-                adocContentsEntity.setDocument(adocText);
-                entity.addContent(adocContentsEntity);
-                
-                // ass the html contents
-                ContentsEntity htmlContentsEntity = new ContentsEntity();
-                htmlContentsEntity.setType(ContentType.HTML);
-                htmlContentsEntity.setDocument(html);
-                entity.addContent(htmlContentsEntity);
-                
-                // add the categories
-                entity.setCategories(parseCategories(file.getPath()));
-                
-                adocEntities.add(entity);
-                
+                if (file.getType().equals(".adoc")) {
+                    adocEntities.add(populateAsciidocEntity(file));
+                } else {
+                    initiateDownload(file);
+                }
             }
 
-            dao.save(adocEntities);
+            if (adocEntities.size() > 0) {
+                dao.save(adocEntities);
+            }
 
         } catch (ClassCastException | ParseException e) {
             log.error("Unable to parse JSON response", e);
@@ -171,6 +127,49 @@ public class AsciidocImporter {
         }
         
         return adocEntities;
+    }
+    
+    private String initiateDownload(RepoFile file) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
+        String downloadPath = "";
+        int slashIndex = file.getPath().lastIndexOf("/");
+        if (slashIndex > 0) {
+            downloadPath = file.getPath().substring(0, slashIndex+1);
+        }
+        
+        log.debug("Downloading file: "+file.getUrl()+" to path "+downloadPath);
+        return scanner.downloadResource(file.getUrl(), downloadPath);
+    }
+    
+    private AsciidocEntity populateAsciidocEntity(RepoFile file) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
+        String adocText = scanner.readResource(file.getUrl());
+        converter.loadString(adocText);
+        String html = converter.convert();
+        
+        // add asciidoc data
+        AsciidocEntity entity = new AsciidocEntity();
+        entity.setTitle(converter.getMainTitle());
+        entity.setFilename(file.getFilename());
+        entity.setPath(file.getPath());
+        entity.setSha(file.getSha());
+        entity.setUrl(file.getUrl());
+        entity.setDate(file.getDate());
+        
+        // add the asciidoc contents
+        ContentsEntity adocContentsEntity = new ContentsEntity();
+        adocContentsEntity.setType(ContentType.ASCIIDOC);
+        adocContentsEntity.setDocument(adocText);
+        entity.addContent(adocContentsEntity);
+        
+        // ass the html contents
+        ContentsEntity htmlContentsEntity = new ContentsEntity();
+        htmlContentsEntity.setType(ContentType.HTML);
+        htmlContentsEntity.setDocument(html);
+        entity.addContent(htmlContentsEntity);
+        
+        // add the categories
+        entity.setCategories(parseCategories(file.getPath()));
+        
+        return entity;
     }
     
     /**

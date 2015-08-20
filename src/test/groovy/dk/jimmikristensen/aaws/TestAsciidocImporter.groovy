@@ -18,7 +18,7 @@ import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity
 import dk.jimmikristensen.aaws.persistence.dao.entity.ContentsEntity
 
 class TestAsciidocImporter extends Specification {
-
+    
     void "One new asciidoc file is successfully stored using mocks"() {
         given:
         def dao = Mock(AsciidocDAO)
@@ -421,6 +421,97 @@ class TestAsciidocImporter extends Specification {
         
         and:
         insertedEntities.size() == 3
+    }
+    
+    void "png file is downloaded successfully when doing initial import"() {
+        given:
+        def dao = Mock(AsciidocDAO)
+        def scanner = Mock(GithubScanner)
+        def converter = Mock(HtmlAsciidocConverter)
+        def importer = new AsciidocImporter(scanner, dao, converter)
+        
+        def owner = 'johndoe'
+        def repo = 'somerepo'
+        def now = new Date()
+        
+        def docUrl = 'https://raw.githubusercontent.com/'+owner+'/'+repo+'/master/test1.png'
+        def filename = 'test1.png'
+        def path = 'test1.png'
+        def sha = '65ac7047eebf24051b6384e3279c0634d74d2aae'
+        def fileType = '.png'
+        
+        when:
+        ArrayList<AsciidocEntity> insertedEntities = importer.initialImport(owner, repo)
+        
+        then:
+        1 * scanner.scanRepository(owner, repo) >> [
+            RepoFile[
+                filename: filename,
+                path: path,
+                sha: sha,
+                url: docUrl,
+                type: fileType,
+                date: now
+            ]
+        ]
+        
+        0 * scanner.readResource(_)
+        0 * converter.loadString(_)
+        0 * converter.convert()
+        0 * converter.getMainTitle()
+        1 * scanner.downloadResource(docUrl, '') >> filename
+        0 * dao.save(_)
+        
+        and:
+        insertedEntities.size() == 0
+    }
+    
+    void "png file is downloaded successfully when doing incremental import"() {
+        given:
+        def dao = Mock(AsciidocDAO)
+        def scanner = Mock(GithubScanner)
+        def converter = Mock(HtmlAsciidocConverter)
+        def importer = new AsciidocImporter(scanner, dao, converter)
+        
+        def owner = 'johndoe'
+        def repo = 'somerepo'
+        def now = new Date()
+        
+        def docUrl = 'https://raw.githubusercontent.com/'+owner+'/'+repo+'/master/some dir/test1.png'
+        def filename = 'test1.png'
+        def path = 'some dir/test1.png'
+        def sha = '65ac7047eebf24051b6384e3279c0634d74d2aae'
+        def fileType = '.png'
+        
+        when:
+        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        
+        then:
+        1 * scanner.scanCommits(owner, repo, now) >> [
+            CommitFile[
+                filename: filename,
+                path: path,
+                sha: sha,
+                url: docUrl,
+                type: fileType,
+                date: now,
+                committer: 'johndoe',
+                status: CommitStatus.ADDED,
+                previousPath: null
+            ]
+        ]
+        
+        0 * scanner.readResource(_)
+        0 * converter.loadString(_)
+        0 * converter.convert()
+        0 * converter.getMainTitle()
+        0 * dao.update(_, _)
+        0 * dao.update(_, _)
+        0 * dao.save(_)
+        1 * scanner.downloadResource(docUrl, 'some dir/') >> filename
+        
+        and:
+        insertedEntities.size() == 0
     }
     
     private String getTestCase(String fileName) {
