@@ -1,7 +1,7 @@
 package dk.jimmikristensen.aaws.domain.asciidoc;
 
 public enum ContentType {
-    HTML("HTML"), ASCIIDOC("ADOC");
+    HTML("HTML"), ASCIIDOC("ADOC"), UNKNOWN("UNKNOWN");
 
     private final String status;
 
@@ -19,6 +19,16 @@ public enum ContentType {
                 return os;
             }
         }
-        return null;
+        return UNKNOWN;
+    }
+    
+    public static String getValidTypes() {
+        String typeStr = "";
+        for (ContentType os : ContentType.values()) {
+            if (os != UNKNOWN) {
+                typeStr += os.getType()+" ";
+            }
+        }
+        return typeStr;
     }
 }

@@ -4,7 +4,9 @@ import java.util.List;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -22,12 +24,19 @@ public interface AsciidocService {
             @DefaultValue("0") @QueryParam("limit") int limit,
             @QueryParam("catrgory") final List<String> categories);
     
-//    @GET
-//    @Path("/asciidoc/{title}/metadata")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getAsciidocsMetadata(
-//            @DefaultValue("") @QueryParam("apikey") String apikey, 
-//            @PathParam("title") String title);
+    @GET
+    @Path("/asciidocs/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAsciidoc(
+            @DefaultValue("") @QueryParam("apikey") String apikey, 
+            @PathParam("id") int id, 
+            @DefaultValue("HTML") @QueryParam("contenttype") String contentType);
+    
+    @POST
+    @Path("/asciidocs")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteAndInitializeAsciidocDatabase(
+            @DefaultValue("") @QueryParam("apikey") String apikey);
     
 //    @GET
 //    @Path("/asciidoc/{title}")

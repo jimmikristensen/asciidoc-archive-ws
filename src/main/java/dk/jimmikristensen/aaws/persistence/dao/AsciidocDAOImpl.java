@@ -109,28 +109,6 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         return 0;
     }
 
-//    @Override
-//    public AsciidocEntity getDocument(int id) {
-//        try (Connection conn = ds.getConnection()) {
-//            String qry = "SELECT doc "
-//                       + "FROM asciidoc "
-//                       + "WHERE id = ?;";
-//            PreparedStatement statement = conn.prepareStatement(qry);
-//            statement.setInt(1, id);
-//            ResultSet resultSet = statement.executeQuery();
-//            if (resultSet.next()) {
-//                AsciidocEntity entity = new AsciidocEntity();
-//                entity.setDoc(resultSet.getString("doc"));
-//                return entity;
-//            }
-//            
-//        } catch (SQLException ex) {
-//            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//    }
-    
-
     @Override
     public List<AsciidocEntity> getDocumentList(int offset, int limit, List<String> categories) {
         List<AsciidocEntity> entities = new ArrayList<>();
@@ -166,6 +144,25 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         
         return entities;
     }
+    
+    @Override
+    public int deleteAsciidocs() throws SQLException {
+        int deleted = 0;
+        try (Connection conn = ds.getConnection()) { 
+            String qry = "DELETE FROM contents;";
+            PreparedStatement statement = conn.prepareStatement(qry);
+            statement.executeUpdate();
+            
+            qry = "DELETE FROM categories;";
+            statement = conn.prepareStatement(qry);
+            statement.executeUpdate();
+            
+            qry = "DELETE FROM asciidocs;";
+            statement = conn.prepareStatement(qry);
+            deleted = statement.executeUpdate();
+        }
+        return deleted;
+    }
 
     private List<CategoryEntity> getCategories(int asciidocId) {
         List<CategoryEntity> cList = new ArrayList<>();
@@ -185,30 +182,6 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         }
         return cList;
     }
-
-//    @Override
-//    public TranslationEntity getTranslation(String title, String type) {
-//        try (Connection conn = ds.getConnection()) {            
-//            String qry = "SELECT t.doc "
-//                       + "FROM asciidoc AS ad, translation AS t "
-//                       + "WHERE ad.id=t.asciidoc_id "
-//                       + "AND ad.title = ? "
-//                       + "AND t.type=?;";
-//            PreparedStatement statement = conn.prepareStatement(qry);
-//            statement.setString(1, title);
-//            statement.setString(2, type);
-//            ResultSet resultSet = statement.executeQuery();
-//            if (resultSet.next()) {
-//                TranslationEntity entity = new TranslationEntity();
-//                entity.setDoc(resultSet.getString("doc"));
-//                return entity;
-//            }
-//            
-//        } catch (SQLException ex) {
-//            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-//    }
 
     @Override
     public boolean save(List<AsciidocEntity> entities) throws SQLException {
@@ -290,10 +263,42 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
         return status;
     }
+    
+    @Override
+    public boolean update(AsciidocEntity entity, String uniquePath)
+            throws SQLException {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
+    @Override
+    public AsciidocEntity getDocumentById(int id, ContentType contentType) {
+        try (Connection conn = ds.getConnection()) {
+            String qry = "SELECT a.id, a.title, a.filename, a.path, a.sha, a.created, a.url, c.type, c.doc "
+                    + "FROM asciidocs AS a "
+                    + "JOIN contents AS c "
+                    + "ON a.id=c.asciidocId "
+                    + "WHERE a.id=? "
+                    + "AND c.type=?;";
+            PreparedStatement stmt = conn.prepareStatement(qry);
+            stmt.setInt(1, id);
+            stmt.setString(2, contentType.getType());
+            
+            List<AsciidocEntity> docs = formatAsciidocEntities(stmt, conn);
+            if (docs.size() > 0) {
+                return docs.get(0);
+            }
+            
+        } catch (SQLException e) {
+            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
+        }
+        
+        return null;
+    }
 
     @Override
     public List<AsciidocEntity> getDocumentsByTitle(String title, ContentType contentType) {
-        ArrayList<AsciidocEntity> docs = new ArrayList<AsciidocEntity>();
+        List<AsciidocEntity> docs = new ArrayList<AsciidocEntity>();
         
         try (Connection conn = ds.getConnection()) {
             String qry = "SELECT a.id, a.title, a.filename, a.path, a.sha, a.created, a.url, c.type, c.doc "
@@ -305,42 +310,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             PreparedStatement stmt = conn.prepareStatement(qry);
             stmt.setString(1, title);
             stmt.setString(2, contentType.name());
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                int asciidocId = rs.getInt("id");
-                
-                AsciidocEntity adoc = new AsciidocEntity();
-                adoc.setId(asciidocId);
-                adoc.setTitle(rs.getString("title"));
-                adoc.setFilename(rs.getString("filename"));
-                adoc.setPath(rs.getString("path"));
-                adoc.setSha(rs.getString("sha"));
-                adoc.setDate(rs.getTimestamp("created"));
-                adoc.setUrl(rs.getString("url"));
-                
-                ContentsEntity contents = new ContentsEntity();
-                contents.setAsciidocId(asciidocId);
-                contents.setType(ContentType.fromString(rs.getString("type")));
-                contents.setDocument(rs.getString("doc"));
-
-                List<CategoryEntity> categories = new ArrayList<>();
-                String catQry = "SELECT name FROM categories WHERE asciidocId = ?;";
-                PreparedStatement statement = conn.prepareStatement(catQry);
-                statement.setInt(1, asciidocId);
-                ResultSet catRs = statement.executeQuery();
-                while (catRs.next()) {
-                    CategoryEntity category = new CategoryEntity();
-                    category.setAsciidocId(asciidocId);
-                    category.setName(catRs.getString("name"));
-                    categories.add(category);
-                }
-                
-                adoc.addContent(contents);
-                adoc.setCategories(categories);
-                
-                docs.add(adoc);
-            }
+            docs = formatAsciidocEntities(stmt, conn);
             
         } catch (SQLException e) {
             Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
@@ -348,11 +318,48 @@ public class AsciidocDAOImpl implements AsciidocDAO {
         
         return docs;
     }
+    
+    private List<AsciidocEntity> formatAsciidocEntities(PreparedStatement stmt, Connection conn) throws SQLException {
+        List<AsciidocEntity> docs = new ArrayList<AsciidocEntity>();
 
-    @Override
-    public boolean update(AsciidocEntity entity, String uniquePath)
-            throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            int asciidocId = rs.getInt("id");
+
+            AsciidocEntity adoc = new AsciidocEntity();
+            adoc.setId(asciidocId);
+            adoc.setTitle(rs.getString("title"));
+            adoc.setFilename(rs.getString("filename"));
+            adoc.setPath(rs.getString("path"));
+            adoc.setSha(rs.getString("sha"));
+            adoc.setDate(rs.getTimestamp("created"));
+            adoc.setUrl(rs.getString("url"));
+
+            ContentsEntity contents = new ContentsEntity();
+            contents.setAsciidocId(asciidocId);
+            contents.setType(ContentType.fromString(rs.getString("type")));
+            contents.setDocument(rs.getString("doc"));
+
+            List<CategoryEntity> categories = new ArrayList<>();
+            String catQry = "SELECT name FROM categories WHERE asciidocId = ?;";
+            PreparedStatement statement = conn.prepareStatement(catQry);
+            statement.setInt(1, asciidocId);
+            ResultSet catRs = statement.executeQuery();
+            while (catRs.next()) {
+                CategoryEntity category = new CategoryEntity();
+                category.setAsciidocId(asciidocId);
+                category.setName(catRs.getString("name"));
+                categories.add(category);
+            }
+
+            adoc.addContent(contents);
+            adoc.setCategories(categories);
+
+            docs.add(adoc);
+        }
+
+        return docs;
     }
+
 }

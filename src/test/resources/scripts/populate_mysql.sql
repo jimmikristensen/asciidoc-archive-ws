@@ -27,10 +27,19 @@ VALUES (
 '2015-04-03 10:00:00', 
 '');
 
+INSERT INTO asciidocs (title, filename, path, sha, created, url) 
+VALUES (
+'Asciidoc Test 1',
+'asciidoc-testcase98.adoc', 
+'test2/asciidoc-testcase98.adoc', 
+'d30c3e54df31c876d426a507f6dec644cb895d4f', 
+'2015-06-01 11:00:00', 
+'');
+
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 1, 
-'adoc', 
+'ADOC', 
 '= Another Introduction to AsciiDocc
 Doc Writer <doc@example.dk>
 
@@ -48,7 +57,7 @@ puts "Hello, World!"'
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 2, 
-'adoc', 
+'ADOC', 
 '= The Brothers Karamazov2
 :author: Fyodor Dostoyevsky
 :encoding: iso-8859-1
@@ -77,8 +86,33 @@ Alexey Fyodorovitch Karamazov was the third son of Fyodor Pavlovitch'
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 3, 
-'adoc', 
+'ADOC', 
 '= Source code listing
+ 
+Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.
+ 
+[source,groovy]
+----
+// File: User.groovy
+class User {
+String username
+}
+----
+ 
+[source,sql]
+----
+CREATE TABLE USER (
+ID INT NOT NULL,
+USERNAME VARCHAR(40) NOT NULL
+);
+----'
+);
+
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+4, 
+'ADOC', 
+'= Source code listing2
  
 Code listings look cool with Asciidoctor and highlight.js with {highlightjs-theme} theme.
  
@@ -102,24 +136,32 @@ USERNAME VARCHAR(40) NOT NULL
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 1, 
-'html', 
+'HTML', 
 '<h1>Another Introduction to AsciiDocc</h1>'
 );
 
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 2, 
-'html', 
+'HTML', 
 '<h1>The History Of A Family</h1>'
 );
 
 INSERT INTO contents (asciidocId, `type`, doc) 
 VALUES (
 3, 
-'html', 
+'HTML', 
 '<h1>Source code listing</h1>'
+);
+
+INSERT INTO contents (asciidocId, `type`, doc) 
+VALUES (
+4, 
+'HTML', 
+'<h1>Source code listing2</h1>'
 );
     
 INSERT INTO categories (asciidocId, name) VALUES (1, 'test1');
 INSERT INTO categories (asciidocId, name) VALUES (2, 'test1');
 INSERT INTO categories (asciidocId, name) VALUES (3, 'test1');
+INSERT INTO categories (asciidocId, name) VALUES (4, 'test2');
