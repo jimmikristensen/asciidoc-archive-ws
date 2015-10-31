@@ -4,15 +4,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType;
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 
 
 public interface AsciidocDAO {
     
-    public List<AsciidocEntity> getDocumentsByTitle(String title, ContentType contentType);
+    public List<AsciidocEntity> getDocumentsByTitle(String title, DocType contentType);
     
-    public AsciidocEntity getDocumentById(int id, ContentType contentType);
+    public AsciidocEntity getDocumentById(int id, DocType contentType);
     
     public boolean save(List<AsciidocEntity> entity) throws SQLException;
     

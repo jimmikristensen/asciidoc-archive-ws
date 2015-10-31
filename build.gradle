@@ -1,10 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'jacoco'
-apply plugin: 'war'
-apply plugin: 'eclipse-wtp'
-
-def dependenciesDir = 'lib'
 
 sourceCompatibility = sourceJavaVersion
 targetCompatibility = targetJavaVersion
@@ -23,12 +19,12 @@ dependencies {
     compile 'org.glassfish.jersey.media:jersey-media-multipart:2.17'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
-    testCompile 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle:2.15'
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.1'
-    testCompile 'com.h2database:h2:1.4.182'
-    testRuntime 'cglib:cglib-nodep:3.1'
+    testCompile 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-bundle:2.22.1'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.5'
+    testCompile 'com.h2database:h2:1.4.190'
+    testRuntime 'cglib:cglib-nodep:3.2.0'
 }
 
 task javadoc(overwrite: true, type: Javadoc) {
@@ -39,15 +35,9 @@ task javadoc(overwrite: true, type: Javadoc) {
     destinationDir = new File('docs/javadoc')
 }
 
-task cleanDependencies(type: Delete) {
-    delete(dependenciesDir)
-}
 
-task copyDependencies(type: Copy, dependsOn: [build, cleanDependencies]) {
-    from configurations.runtime
-    into dependenciesDir
-    from configurations.testRuntime
-    into dependenciesDir
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
 }
 
 task version << {
@@ -64,24 +54,9 @@ tasks.withType(Test) {
 }
 
 jacocoTestReport {
-        reports {
-                xml.enabled false
-                csv.enabled false
-                html.destination "${buildDir}/reports/jacocoHtml"
-        }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
-}
-
-sourceSets {
-test {
-    java {
-        srcDir 'src/test/java'
+    reports {
+            xml.enabled false
+            csv.enabled false
+            html.destination "${buildDir}/reports/jacocoHtml"
     }
-    resources {
-        srcDir 'src/test/resources'
-    }
-}
 }

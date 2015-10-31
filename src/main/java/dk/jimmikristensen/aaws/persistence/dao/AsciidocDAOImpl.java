@@ -4,16 +4,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import dk.jimmikristensen.aaws.domain.AsciidocImporter;
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.ContentsEntity;
@@ -21,6 +25,8 @@ import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory;
 
 public class AsciidocDAOImpl implements AsciidocDAO {
 
+    private final static Logger log = LoggerFactory.getLogger(AsciidocDAOImpl.class);
+    
     private DataSource ds;
 
     public AsciidocDAOImpl(DataSourceFactory dsFactory) throws NamingException {
@@ -86,7 +92,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             try {
                 conn.rollback();
             } catch (SQLException e) {
-                Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -103,7 +109,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
                 return resultSet.getInt("id");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage(), ex);
         }
 
         return 0;
@@ -139,7 +145,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             }
             
         } catch (SQLException ex) {
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage(), ex);
         }
         
         return entities;
@@ -178,7 +184,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
                 cList.add(cEntity);
             }
         } catch (SQLException e) {
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
         }
         return cList;
     }
@@ -200,7 +206,9 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             conn.setAutoCommit(false);
         
             for (AsciidocEntity entity : entities) {
-                asciidocStmt = conn.prepareStatement(asciidocQry);
+                log.debug("Trying to store: "+entity.getFilename());
+                
+                asciidocStmt = conn.prepareStatement(asciidocQry, Statement.RETURN_GENERATED_KEYS);
                 asciidocStmt.setString(1, entity.getTitle());
                 asciidocStmt.setString(2, entity.getFilename());
                 asciidocStmt.setString(3, entity.getPath());
@@ -257,7 +265,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
                     conn.close();
                 }
             } catch (SQLException ex) {
-                Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage(), ex);
             }
         }
 
@@ -272,7 +280,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
     }
     
     @Override
-    public AsciidocEntity getDocumentById(int id, ContentType contentType) {
+    public AsciidocEntity getDocumentById(int id, DocType contentType) {
         try (Connection conn = ds.getConnection()) {
             String qry = "SELECT a.id, a.title, a.filename, a.path, a.sha, a.created, a.url, c.type, c.doc "
                     + "FROM asciidocs AS a "
@@ -290,14 +298,14 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             }
             
         } catch (SQLException e) {
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
         }
         
         return null;
     }
 
     @Override
-    public List<AsciidocEntity> getDocumentsByTitle(String title, ContentType contentType) {
+    public List<AsciidocEntity> getDocumentsByTitle(String title, DocType contentType) {
         List<AsciidocEntity> docs = new ArrayList<AsciidocEntity>();
         
         try (Connection conn = ds.getConnection()) {
@@ -313,7 +321,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
             docs = formatAsciidocEntities(stmt, conn);
             
         } catch (SQLException e) {
-            Logger.getLogger(AsciidocDAOImpl.class.getName()).log(Level.SEVERE, null, e);
+            log.error(e.getMessage(), e);
         }
         
         return docs;
@@ -321,12 +329,12 @@ public class AsciidocDAOImpl implements AsciidocDAO {
     
     private List<AsciidocEntity> formatAsciidocEntities(PreparedStatement stmt, Connection conn) throws SQLException {
         List<AsciidocEntity> docs = new ArrayList<AsciidocEntity>();
-
+        
         ResultSet rs = stmt.executeQuery();
 
         while (rs.next()) {
             int asciidocId = rs.getInt("id");
-
+            
             AsciidocEntity adoc = new AsciidocEntity();
             adoc.setId(asciidocId);
             adoc.setTitle(rs.getString("title"));
@@ -338,7 +346,7 @@ public class AsciidocDAOImpl implements AsciidocDAO {
 
             ContentsEntity contents = new ContentsEntity();
             contents.setAsciidocId(asciidocId);
-            contents.setType(ContentType.fromString(rs.getString("type")));
+            contents.setType(DocType.fromString(rs.getString("type")));
             contents.setDocument(rs.getString("doc"));
 
             List<CategoryEntity> categories = new ArrayList<>();

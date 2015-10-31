@@ -1,5 +1,3 @@
-
-
 package dk.jimmikristensen.aaws
 
 import static org.junit.Assert.*

@@ -1,11 +1,11 @@
 package dk.jimmikristensen.aaws.domain.asciidoc;
 
-public enum ContentType {
+public enum DocType {
     HTML("HTML"), ASCIIDOC("ADOC"), UNKNOWN("UNKNOWN");
 
     private final String status;
 
-    private ContentType(String status) {
+    private DocType(String status) {
         this.status = status;
     }
 
@@ -13,8 +13,8 @@ public enum ContentType {
         return status;
     }
 
-    public static ContentType fromString(String value) {
-        for (ContentType os : ContentType.values()) {
+    public static DocType fromString(String value) {
+        for (DocType os : DocType.values()) {
             if (os.getType().equalsIgnoreCase(value)) {
                 return os;
             }
@@ -24,7 +24,7 @@ public enum ContentType {
     
     public static String getValidTypes() {
         String typeStr = "";
-        for (ContentType os : ContentType.values()) {
+        for (DocType os : DocType.values()) {
             if (os != UNKNOWN) {
                 typeStr += os.getType()+" ";
             }

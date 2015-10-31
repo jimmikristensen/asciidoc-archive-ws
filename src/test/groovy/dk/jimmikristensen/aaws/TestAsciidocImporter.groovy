@@ -1,12 +1,10 @@
 package dk.jimmikristensen.aaws
 
-import org.junit.After;
-
 import spock.lang.Specification
 import dk.jimmikristensen.aaws.domain.AsciidocImporter
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType
 import dk.jimmikristensen.aaws.domain.asciidoc.HtmlAsciidocConverter
-import dk.jimmikristensen.aaws.domain.github.CommitStatus;
+import dk.jimmikristensen.aaws.domain.github.CommitStatus
 import dk.jimmikristensen.aaws.domain.github.GithubScanner
 import dk.jimmikristensen.aaws.domain.github.dto.CommitFile
 import dk.jimmikristensen.aaws.domain.github.dto.RepoFile
@@ -16,12 +14,15 @@ import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAOImpl
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity
 import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity
 import dk.jimmikristensen.aaws.persistence.dao.entity.ContentsEntity
+import dk.jimmikristensen.aaws.persistence.dao.entity.ImportReportEntity
+import dk.jimmikristensen.aaws.persistence.database.DataSourceFactory
 
 class TestAsciidocImporter extends Specification {
     
     void "One new asciidoc file is successfully stored using mocks"() {
         given:
-        def dao = Mock(AsciidocDAO)
+        DataSourceFactory dsFactory = new FakeDataSourceFactory();
+        AsciidocDAO dao = new AsciidocDAOImpl(dsFactory);
         def scanner = Mock(GithubScanner)
         def converter = Mock(HtmlAsciidocConverter)
         def importer = new AsciidocImporter(scanner, dao, converter)
@@ -40,53 +41,55 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.initialImport(owner, repo)
+        ImportReportEntity report = importer.initialImport(owner, repo)
         
         then:
         1 * scanner.scanRepository(owner, repo) >> [
-                RepoFile[
+                new RepoFile(
                     filename: filename,
                     path: path,
                     sha: sha,
                     url: docUrl,
                     type: fileType,
                     date: now
-                ]
+                )
             ]
         
         1 * scanner.readResource(docUrl) >> asciidoc
         1 * converter.loadString(asciidoc)
         1 * converter.convert() >> convertedDoc
         1 * converter.getMainTitle() >> docTitle
-        1 * dao.save(_ as ArrayList<AsciidocEntity>)
 
-        and: 'check that all attributes has been set on the asciidoc entity'
-        insertedEntities.size() == 1
-        insertedEntities.get(0).getTitle() == docTitle
-        insertedEntities.get(0).getDate() == now
-        insertedEntities.get(0).getFilename() == filename
-        insertedEntities.get(0).getPath() == path
-        insertedEntities.get(0).getSha() == sha
-        insertedEntities.get(0).getUrl() == docUrl
-        insertedEntities.get(0).getContents().size() == 2
-        insertedEntities.get(0).getCategories().size() == 1
+        and: 'check that all attributes has been set on the report'
+        report.getInserted() == 1
+        report.getReportDate() != null
+        report.getResourcesDownloaded() == 0
+        report.getUpdated() == 0
         
-        and: 'check that the asciidoc is part of contents'
-        ContentsEntity adocContents = insertedEntities.get(0).getContents().get(0)
-        adocContents.getDocument() == '= Introduction to AsciiDoc'
-        adocContents.getType() == ContentType.ASCIIDOC
-        
+        and:
+        List<AsciidocEntity> docList = dao.getDocumentsByTitle(docTitle, DocType.HTML)
+        docList.size() == 1
+        AsciidocEntity doc = docList.get(0)
+        doc.getTitle() == docTitle
+        doc.getDate() == now
+        doc.getFilename() == filename
+        doc.getPath() == path
+        doc.getSha() == sha
+        doc.getUrl() == docUrl
+        doc.getContents().size() == 1
+        doc.getCategories().size() == 1
+                
         and: 'check that the html is part of contents'
-        ContentsEntity htmlContents = insertedEntities.get(0).getContents().get(1)
+        ContentsEntity htmlContents = doc.getContents().get(0)
         htmlContents.getDocument() == '<h1>Introduction to AsciiDoc</h1>'
-        htmlContents.getType() == ContentType.HTML
+        htmlContents.getType() == DocType.HTML
         
         and: 'check that categories has been set'
-        CategoryEntity category = insertedEntities.get(0).getCategories().get(0)
+        CategoryEntity category = doc.getCategories().get(0)
         category.getName() == 'test cases'
     }
     
-    void "One new asciidoc file is successfully stored using fake database"() {
+    void "Asciidoc without title will have the filename as title"() {
         given:
         def dsFactory = new FakeDataSourceFactory()
         def dao = new AsciidocDAOImpl(dsFactory)
@@ -100,7 +103,7 @@ class TestAsciidocImporter extends Specification {
         def now = new Date()
         def docUrl = 'https://raw.githubusercontent.com/'+owner+'/'+repo+'/master/asciidoc-testcase1.adoc'
         def convertedDoc = '<h1>Introduction to AsciiDoc</h1>'
-        def docTitle = 'Introduction to AsciiDoc'
+        def docTitle = null
         def asciidoc = '= Introduction to AsciiDoc'
         def filename = 'asciidoc-testcase1.adoc'
         def path = 'test cases/asciidoc-testcase1.adoc'
@@ -108,45 +111,30 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.initialImport(owner, repo)
+        ImportReportEntity report = importer.initialImport(owner, repo)
         
         then:
         1 * scanner.scanRepository(owner, repo) >> [
-            RepoFile[
-                filename: filename,
-                path: path,
-                sha: sha,
-                url: docUrl,
-                type: fileType,
-                date: now
+                new RepoFile(
+                    filename: filename,
+                    path: path,
+                    sha: sha,
+                    url: docUrl,
+                    type: fileType,
+                    date: now
+                )
             ]
-        ]
+        
         1 * scanner.readResource(docUrl) >> asciidoc
         1 * converter.loadString(asciidoc)
         1 * converter.convert() >> convertedDoc
         1 * converter.getMainTitle() >> docTitle
         
-        when:
-        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, ContentType.HTML)
-        
-        then:
-        docs != null
-        docs.size() == 1
-        def docEntity = docs.get(0)
-        docEntity.getId() > 0
-        docEntity.getDate() == now
-        docEntity.getTitle() == docTitle
-        
         and:
-        docEntity.getCategories().size() == 1
-        def catEntity = docEntity.getCategories().get(0)
-        catEntity.getName() == 'test cases'
-        
-        and:
-        docEntity.getContents().size() == 1
-        def contentEntity = docEntity.getContents().get(0)
-        contentEntity.getDocument() == convertedDoc
-        contentEntity.getType() == ContentType.HTML
+        List<AsciidocEntity> docList = dao.getDocumentsByTitle(filename, DocType.HTML)
+        docList.size() == 1
+        AsciidocEntity doc = docList.get(0)
+        doc.getTitle() == filename
     }
     
     void "One new asciidoc file is successfully stored using fake database and real converter"() {
@@ -166,23 +154,23 @@ class TestAsciidocImporter extends Specification {
         def filename = 'asciidoc-testcase1.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.initialImport(owner, repo)
+        ImportReportEntity report = importer.initialImport(owner, repo)
         
         then:
         1 * scanner.scanRepository(owner, repo) >> [
-            RepoFile[
+            new RepoFile(
                 filename: filename,
                 path: 'test cases/asciidoc-testcase1.adoc',
                 sha: '4e6e10426375e746ad5dff7d94e765af66a1b8a5',
                 url: docUrl,
                 type: '.adoc',
                 date: now
-            ]
+            )
         ]
         1 * scanner.readResource(docUrl) >> getTestCase(filename)
         
         when:
-        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, ContentType.HTML)
+        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, DocType.HTML)
         
         then:
         docs != null
@@ -201,7 +189,7 @@ class TestAsciidocImporter extends Specification {
         docEntity.getContents().size() == 1
         def contentEntity = docEntity.getContents().get(0)
         contentEntity.getDocument().startsWith('<div')
-        contentEntity.getType() == ContentType.HTML
+        contentEntity.getType() == DocType.HTML
     }
     
     void "Updating one commit file with status modified succeeds"() {
@@ -225,11 +213,11 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        ImportReportEntity report = importer.incrementalImport(owner, repo, now)
         
         then:
         1 * scanner.scanCommits(owner, repo, now) >> [
-            CommitFile[
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -239,7 +227,7 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.MODIFIED,
                 previousPath: null
-            ]
+            )
         ]
     
         1 * scanner.readResource(docUrl) >> asciidoc
@@ -249,7 +237,8 @@ class TestAsciidocImporter extends Specification {
         1 * dao.update(_ as AsciidocEntity, path)
         
         and:
-        insertedEntities.size() == 1
+        report.getUpdated() == 1
+        report.getInserted() == 0
     }
     
     void "Updating one commit file with status renamed succeeds"() {
@@ -274,11 +263,11 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        ImportReportEntity report = importer.incrementalImport(owner, repo, now)
         
         then:
         1 * scanner.scanCommits(owner, repo, now) >> [
-            CommitFile[
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -288,7 +277,7 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.RENAMED,
                 previousPath: previousPath
-            ]
+            )
         ]
     
         1 * scanner.readResource(docUrl) >> asciidoc
@@ -298,7 +287,8 @@ class TestAsciidocImporter extends Specification {
         1 * dao.update(_ as AsciidocEntity, previousPath)
         
         and:
-        insertedEntities.size() == 1
+        report.getUpdated() == 1
+        report.getInserted() == 0
     }
     
     void "Updating one commit file with status added succeeds"() {
@@ -323,11 +313,11 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        ImportReportEntity report = importer.incrementalImport(owner, repo, now)
         
         then:
         1 * scanner.scanCommits(owner, repo, now) >> [
-            CommitFile[
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -337,7 +327,7 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.ADDED,
                 previousPath: null
-            ]
+            )
         ]
     
         1 * scanner.readResource(docUrl) >> asciidoc
@@ -347,7 +337,8 @@ class TestAsciidocImporter extends Specification {
         1 * dao.save(_ as ArrayList<AsciidocEntity>)
         
         and:
-        insertedEntities.size() == 1
+        report.getInserted() == 1
+        report.getUpdated() == 0
     }
     
     void "Updating three commit file with status modified, renamed and added succeeds"() {
@@ -372,11 +363,11 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.adoc'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        ImportReportEntity report = importer.incrementalImport(owner, repo, now)
         
         then:
         1 * scanner.scanCommits(owner, repo, now) >> [
-            CommitFile[
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -386,8 +377,8 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.MODIFIED,
                 previousPath: previousPath
-            ],
-            CommitFile[
+            ),
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -397,8 +388,8 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.RENAMED,
                 previousPath: previousPath
-            ],
-            CommitFile[
+            ),
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -408,7 +399,7 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.ADDED,
                 previousPath: previousPath
-            ]
+            )
         ]
     
         3 * scanner.readResource(docUrl) >> asciidoc
@@ -420,7 +411,8 @@ class TestAsciidocImporter extends Specification {
         1 * dao.save(_ as ArrayList<AsciidocEntity>)
         
         and:
-        insertedEntities.size() == 3
+        report.getUpdated() == 2
+        report.getInserted() == 1
     }
     
     void "png file is downloaded successfully when doing initial import"() {
@@ -441,18 +433,18 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.png'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.initialImport(owner, repo)
+        ImportReportEntity report = importer.initialImport(owner, repo)
         
         then:
         1 * scanner.scanRepository(owner, repo) >> [
-            RepoFile[
+            new RepoFile(
                 filename: filename,
                 path: path,
                 sha: sha,
                 url: docUrl,
                 type: fileType,
                 date: now
-            ]
+            )
         ]
         
         0 * scanner.readResource(_)
@@ -463,7 +455,9 @@ class TestAsciidocImporter extends Specification {
         0 * dao.save(_)
         
         and:
-        insertedEntities.size() == 0
+        report.getUpdated() == 0
+        report.getResourcesDownloaded() == 1
+        report.getInserted() == 0
     }
     
     void "png file is downloaded successfully when doing incremental import"() {
@@ -484,11 +478,11 @@ class TestAsciidocImporter extends Specification {
         def fileType = '.png'
         
         when:
-        ArrayList<AsciidocEntity> insertedEntities = importer.incrementalImport(owner, repo, now)
+        ImportReportEntity report = importer.incrementalImport(owner, repo, now)
         
         then:
         1 * scanner.scanCommits(owner, repo, now) >> [
-            CommitFile[
+            new CommitFile(
                 filename: filename,
                 path: path,
                 sha: sha,
@@ -498,7 +492,7 @@ class TestAsciidocImporter extends Specification {
                 committer: 'johndoe',
                 status: CommitStatus.ADDED,
                 previousPath: null
-            ]
+            )
         ]
         
         0 * scanner.readResource(_)
@@ -511,7 +505,9 @@ class TestAsciidocImporter extends Specification {
         1 * scanner.downloadResource(docUrl, 'some dir/') >> filename
         
         and:
-        insertedEntities.size() == 0
+        report.getInserted() == 0
+        report.getUpdated() == 0
+        report.getResourcesDownloaded() == 1
     }
     
     private String getTestCase(String fileName) {

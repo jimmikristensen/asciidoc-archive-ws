@@ -67,6 +67,7 @@ public class GithubScanner implements RepoScanner {
         dateAdapter = new DateAdapter();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<CommitFile> scanCommits(String owner, String repo, Date date) throws IOException, ParseException, java.text.ParseException, ClassCastException, GithubLimitReachedException, GithubHttpErrorException {
         String url = GH_API_URL + "/repos/"+owner+"/"+repo+"/commits";
@@ -93,6 +94,7 @@ public class GithubScanner implements RepoScanner {
         return commitResources;
     }
     
+    @SuppressWarnings("unchecked")
     private void scanCommit(String url) throws IOException, ParseException, ClassCastException, GithubLimitReachedException, GithubHttpErrorException {
         Response resp = callGithub(url, null);
         String respBody = resp.body().string().trim();
@@ -162,6 +164,7 @@ public class GithubScanner implements RepoScanner {
         return fileResources;
     }
     
+    @SuppressWarnings("unchecked")
     private void scanRepo(String url) throws IOException, ParseException, ClassCastException, GithubLimitReachedException, GithubHttpErrorException {
         Response resp = callGithub(url, null);
         String respBody = resp.body().string().trim();
@@ -214,10 +217,8 @@ public class GithubScanner implements RepoScanner {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         
         byte[] data = new byte[1024];
-        long total = 0;
         int count = 0;
         while ((count = input.read(data)) != -1) {
-            total += count;
             output.write(data, 0, count);
         }
        
@@ -260,10 +261,8 @@ public class GithubScanner implements RepoScanner {
                 +filename);
         
         byte[] data = new byte[1024];
-        long total = 0;
         int count = 0;
         while ((count = input.read(data)) != -1) {
-            total += count;
             output.write(data, 0, count);
         }
         

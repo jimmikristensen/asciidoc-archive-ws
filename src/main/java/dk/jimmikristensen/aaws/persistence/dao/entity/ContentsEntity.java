@@ -1,11 +1,11 @@
 package dk.jimmikristensen.aaws.persistence.dao.entity;
 
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType;
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType;
 
 public class ContentsEntity {
 
     private int asciidocId;
-    private ContentType type;
+    private DocType type;
     private String document;
     
     public int getAsciidocId() {
@@ -14,10 +14,10 @@ public class ContentsEntity {
     public void setAsciidocId(int asciidocId) {
         this.asciidocId = asciidocId;
     }
-    public ContentType getType() {
+    public DocType getType() {
         return type;
     }
-    public void setType(ContentType type) {
+    public void setType(DocType type) {
         this.type = type;
     }
     public String getDocument() {

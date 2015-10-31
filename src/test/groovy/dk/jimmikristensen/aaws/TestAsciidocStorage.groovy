@@ -1,12 +1,9 @@
 package dk.jimmikristensen.aaws
 
 import static org.junit.Assert.*
-
-import java.util.List;
-
 import spock.lang.Specification
 import spock.lang.Unroll
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType
 import dk.jimmikristensen.aaws.domain.encryption.SHA1
 import dk.jimmikristensen.aaws.doubles.FakeDataSourceFactory
 import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO
@@ -33,7 +30,7 @@ class TestAsciidocStorage extends Specification {
         def docTitle = 'Asciidoc Test 2'
         
         when:
-        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, ContentType.HTML)
+        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, DocType.HTML)
         
         then:
         docs != null
@@ -56,7 +53,7 @@ class TestAsciidocStorage extends Specification {
         def docTitle = 'Asciidoc Test 1'
         
         when:
-        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, ContentType.HTML)
+        ArrayList<AsciidocEntity> docs = dao.getDocumentsByTitle(docTitle, DocType.HTML)
         
         then:
         docs != null
@@ -79,7 +76,7 @@ class TestAsciidocStorage extends Specification {
         def docId = 1
         
         when:
-        AsciidocEntity entity = dao.getDocumentById(docId, ContentType.HTML);
+        AsciidocEntity entity = dao.getDocumentById(docId, DocType.HTML);
         
         then:
         entity != null
@@ -87,7 +84,7 @@ class TestAsciidocStorage extends Specification {
         entity.getTitle() == 'Asciidoc Test 1'
         entity.getCategories().size() == 1
         entity.getContents().size() == 1
-        entity.getContents().get(0).getType() == ContentType.HTML
+        entity.getContents().get(0).getType() == DocType.HTML
     }
 
     void "will truncate asciidoc database"() {

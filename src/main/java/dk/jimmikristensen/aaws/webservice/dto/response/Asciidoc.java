@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType;
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType;
 
 @XmlRootElement(name = "asciidoc")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -16,7 +16,7 @@ public class Asciidoc {
     private int id;
     private String title;
     private Date date;
-    private ContentType contentType;
+    private DocType contentType;
     private String content;
     private List<AsciidocCatrgory> categories;
     private String url;
@@ -39,10 +39,10 @@ public class Asciidoc {
     public void setDate(Date date) {
         this.date = date;
     }
-    public ContentType getContentType() {
+    public DocType getContentType() {
         return contentType;
     }
-    public void setContentType(ContentType contentType) {
+    public void setContentType(DocType contentType) {
         this.contentType = contentType;
     }
     public String getContent() {

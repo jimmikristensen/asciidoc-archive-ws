@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.jimmikristensen.aaws.domain.asciidoc.AsciidocConverter;
-import dk.jimmikristensen.aaws.domain.asciidoc.ContentType;
+import dk.jimmikristensen.aaws.domain.asciidoc.DocType;
 import dk.jimmikristensen.aaws.domain.exception.ImporterException;
 import dk.jimmikristensen.aaws.domain.github.CommitStatus;
 import dk.jimmikristensen.aaws.domain.github.RepoScanner;
@@ -23,6 +23,7 @@ import dk.jimmikristensen.aaws.persistence.dao.AsciidocDAO;
 import dk.jimmikristensen.aaws.persistence.dao.entity.AsciidocEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.CategoryEntity;
 import dk.jimmikristensen.aaws.persistence.dao.entity.ContentsEntity;
+import dk.jimmikristensen.aaws.persistence.dao.entity.ImportReportEntity;
 
 public class AsciidocImporter {
     
@@ -38,7 +39,9 @@ public class AsciidocImporter {
         this.converter = converter;
     }
     
-    public List<AsciidocEntity> incrementalImport(String owner, String repo, Date fromDate) throws ImporterException {
+    public ImportReportEntity incrementalImport(String owner, String repo, Date fromDate) throws ImporterException {
+        ImportReportEntity report = new ImportReportEntity();
+        
         // list of all committed asciidocs to return
         List<AsciidocEntity> adocEntities = new ArrayList<AsciidocEntity>();
         
@@ -55,19 +58,23 @@ public class AsciidocImporter {
                                     
                     if (file.getStatus() == CommitStatus.MODIFIED) {
                         dao.update(entity, file.getPath());
+                        report.increaseUpdated();
                     } else if (file.getStatus() == CommitStatus.RENAMED) {
                         dao.update(entity, file.getPreviousPath());
+                        report.increaseUpdated();
                     } else if (file.getStatus() == CommitStatus.ADDED) {
                         adocEntitySaveList.add(entity);
                     }
                     
                 } else {
                     initiateDownload(file);
+                    report.increaseResourcesDownloaded();
                 }
             }
             
             if (adocEntitySaveList.size() > 0) {
                 dao.save(adocEntitySaveList);
+                report.setInserted(adocEntitySaveList.size());
             }
 
         } catch (ClassCastException | ParseException e) {
@@ -90,11 +97,13 @@ public class AsciidocImporter {
             throw new ImporterException("Unable to import due to date parse error");
         }
         
-        return adocEntities;
+        return report;
     }
         
-    public List<AsciidocEntity> initialImport(String owner, String repo) throws ImporterException {
+    public ImportReportEntity initialImport(String owner, String repo) throws ImporterException {
+        ImportReportEntity report = new ImportReportEntity();
         List<AsciidocEntity> adocEntities = new ArrayList<AsciidocEntity>();
+        
         try {
             List<RepoFile> fileList = scanner.scanRepository(owner, repo);
             for (RepoFile file : fileList) {
@@ -102,11 +111,13 @@ public class AsciidocImporter {
                     adocEntities.add(populateAsciidocEntity(file));
                 } else {
                     initiateDownload(file);
+                    report.increaseResourcesDownloaded();
                 }
             }
 
             if (adocEntities.size() > 0) {
                 dao.save(adocEntities);
+                report.setInserted(adocEntities.size());
             }
 
         } catch (ClassCastException | ParseException e) {
@@ -126,7 +137,7 @@ public class AsciidocImporter {
             throw new ImporterException("Unable to import due to database error ("+e.getErrorCode()+": "+e.getMessage()+")");
         }
         
-        return adocEntities;
+        return report;
     }
     
     private String initiateDownload(RepoFile file) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
@@ -136,18 +147,22 @@ public class AsciidocImporter {
             downloadPath = file.getPath().substring(0, slashIndex+1);
         }
         
-        log.debug("Downloading file: "+file.getUrl()+" to path "+downloadPath);
+        log.debug("Downloading file: "+file.getUrl()+" to path ("+downloadPath+")");
         return scanner.downloadResource(file.getUrl(), downloadPath);
     }
     
     private AsciidocEntity populateAsciidocEntity(RepoFile file) throws IOException, GithubLimitReachedException, GithubHttpErrorException {
         String adocText = scanner.readResource(file.getUrl());
         converter.loadString(adocText);
-        String html = converter.convert();
+        String convertedStr = converter.convert();
         
         // add asciidoc data
+        String title = converter.getMainTitle();
+        if (title == null) {
+            title = file.getFilename();
+        }
         AsciidocEntity entity = new AsciidocEntity();
-        entity.setTitle(converter.getMainTitle());
+        entity.setTitle(title);
         entity.setFilename(file.getFilename());
         entity.setPath(file.getPath());
         entity.setSha(file.getSha());
@@ -156,14 +171,14 @@ public class AsciidocImporter {
         
         // add the asciidoc contents
         ContentsEntity adocContentsEntity = new ContentsEntity();
-        adocContentsEntity.setType(ContentType.ASCIIDOC);
+        adocContentsEntity.setType(DocType.ASCIIDOC);
         adocContentsEntity.setDocument(adocText);
         entity.addContent(adocContentsEntity);
         
         // ass the html contents
         ContentsEntity htmlContentsEntity = new ContentsEntity();
-        htmlContentsEntity.setType(ContentType.HTML);
-        htmlContentsEntity.setDocument(html);
+        htmlContentsEntity.setType(DocType.HTML);
+        htmlContentsEntity.setDocument(convertedStr);
         entity.addContent(htmlContentsEntity);
         
         // add the categories

@@ -21,13 +21,14 @@ public class GithubTest {
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException, GithubLimitReachedException, GithubHttpErrorException {
 //        fetchAll();
 //        fetchCommits();
-        downloadResource();
-//        readFile();
+//        downloadResource();
+        readFile();
     }
     
     public static void readFile() throws IOException, GithubLimitReachedException, GithubHttpErrorException {
         GithubScanner gh = new GithubScanner();
         String file = gh.readResource("https://raw.githubusercontent.com/jimmikristensen/TDD/c6942dc14649898daf107245dba595f131693f33/test1/asciidoc-testcase16.adoc");
+        System.out.println(file);
     }
     
     public static void downloadResource() throws IOException, GithubLimitReachedException, GithubHttpErrorException {

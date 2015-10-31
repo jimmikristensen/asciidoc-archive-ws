@@ -22,7 +22,8 @@ DROP TABLE IF EXISTS `categories`;
 CREATE TABLE IF NOT EXISTS `categories` (
   `asciidocId` INT UNSIGNED NOT NULL,
   `name` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`asciidocId`),
+  PRIMARY KEY (`asciidocId`, `name`),
+  INDEX `INDEX3` (`name` ASC),
   CONSTRAINT `fk_categories_asciidocs1`
     FOREIGN KEY (`asciidocId`)
     REFERENCES `asciidocs` (`id`)
